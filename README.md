@@ -2,15 +2,18 @@
 
 ## Installation
 
-Generate the configure script with `autoreconf --install`.
+Generate the configure script running `autoreconf --install` from this directory.
 
-After that, the usual
+After that, make the build in a separate directory.
+
+For example, after cloning the repository:
 
 ```
-./configure && make && sudo make install
+autoreconf --install
+mkdir builds
+cd builds
+../configure && make && sudo make install
 ```
-
-should do the thing.
 
 See file [INSTALL](INSTALL) for more details.
 

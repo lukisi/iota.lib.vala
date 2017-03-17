@@ -21,4 +21,5 @@ builds
 .libs
 *.stamp
 *.stamp-t
+*~
 

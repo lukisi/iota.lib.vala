@@ -2,7 +2,7 @@ AC_PREREQ([2.68])
 AC_INIT([iotalib-vala],[0.1])
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE([subdir-objects] [1.11])
+AM_INIT_AUTOMAKE([foreign] [subdir-objects] [1.11])
 AM_SILENT_RULES([yes])
 
 dnl This avoids dumb '-g -O2' autoconf's default, but won't 
