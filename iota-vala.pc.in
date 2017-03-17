@@ -1,0 +1,13 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+vapidir=${prefix}/share/vala/vapi
+
+Name: @PACKAGE_NAME@
+Description: Vala library for IOTA API
+Version: @VERSION@
+Requires.private: gee-0.8
+Libs: -L${libdir} -liota-vala
+Cflags: -I${includedir}
+
