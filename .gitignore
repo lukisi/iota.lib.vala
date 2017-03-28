@@ -1,6 +1,8 @@
 iota-vala.h
 iota-vala.vapi
 libiota.c
+crypto/converter.c
+testsuites/test_converter/test_converter.c
 Makefile.in
 aclocal.m4
 autom4te.cache/
@@ -13,6 +15,7 @@ depcomp
 install-sh
 ltmain.sh
 missing
+test-driver
 builds
 *.o
 *.lo
