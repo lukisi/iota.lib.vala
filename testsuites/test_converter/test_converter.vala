@@ -13,5 +13,8 @@ void main()
     expect = new ArrayList<int>.wrap({1, 0, -1, 1, -1, -1, 1, 0, 0, 1, 1, 1, 0, 0, 0});
     assert(trits.size == expect.size);
     for (int i = 0; i < expect.size; i++) assert(trits[i] == expect[i]);
+
+    string back = c.trytes(trits);
+    assert(back == "SPAM9");
 }
 

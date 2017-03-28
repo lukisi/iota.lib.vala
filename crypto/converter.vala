@@ -93,5 +93,24 @@ public class Converter : Object
         return ret;
     }
 
+    public string trytes(ArrayList<int> trits)
+    {
+        string ret = "";
+
+        for (var i = 0; i+2 < trits.size; i += 3)
+        {
+            // Iterate over all possible tryte values to find correct trit representation
+            for (var j = 0; j < trytesAlphabet.length; j++)
+            {
+                if (trytesTrits[j][0] == trits[i] && trytesTrits[j][1] == trits[i + 1] && trytesTrits[j][2] == trits[i + 2])
+                {
+                    ret += @"$(trytesAlphabet[j])";
+                    break;
+                }
+            }
+        }
+
+        return ret;
+    }
 }
 
