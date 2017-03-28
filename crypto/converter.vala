@@ -77,9 +77,21 @@ public class Converter : Object
         return ret;
     }
 
-    public ArrayList<int> trits_from_string(string input)
+    public ArrayList<int> trits_from_string(string input, ArrayList<int>? state = null)
     {
-        error("not yet implemented");
+        ArrayList<int> ret = new ArrayList<int>();
+        if (state != null) ret.add_all(state);
+
+        for (var i = 0; i < input.length; i++)
+        {
+            var index = trytesAlphabet.index_of_char(input[i]);
+            ret.add(trytesTrits[index][0]);
+            ret.add(trytesTrits[index][1]);
+            ret.add(trytesTrits[index][2]);
+        }
+
+        return ret;
     }
+
 }
 
