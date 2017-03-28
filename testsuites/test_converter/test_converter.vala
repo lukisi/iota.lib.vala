@@ -16,5 +16,8 @@ void main()
 
     string back = c.trytes(trits);
     assert(back == "SPAM9");
+
+    int intval = c.get_value(trits);
+    assert(intval == 256303);
 }
 

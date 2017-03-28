@@ -112,5 +112,12 @@ public class Converter : Object
 
         return ret;
     }
+
+    public int get_value(ArrayList<int> trits)
+    {
+        int ret = 0;
+        for (var i = trits.size; i-- > 0; ) ret = ret * 3 + trits[i];
+        return ret;
+    }
 }
 
