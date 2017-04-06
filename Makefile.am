@@ -16,6 +16,7 @@ check_PROGRAMS = \
 libiota_vala_la_SOURCES = \
 	libiota.vala \
 	crypto/converter.vala \
+	crypto/curl.vala \
 	$(NULL)
 
 libiota_vala_la_VALAFLAGS = \
