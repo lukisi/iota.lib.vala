@@ -7,7 +7,7 @@ vapidir=${prefix}/share/vala/vapi
 Name: @PACKAGE_NAME@
 Description: Vala library for IOTA API
 Version: @VERSION@
-Requires.private: gee-0.8
+Requires.private: gee-0.8 ccurl
 Libs: -L${libdir} -liota-vala
 Cflags: -I${includedir}
 

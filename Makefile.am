@@ -17,6 +17,7 @@ libiota_vala_la_SOURCES = \
 	libiota.vala \
 	crypto/converter.vala \
 	crypto/curl.vala \
+	crypto/dep_ccurl.vapi \
 	$(NULL)
 
 libiota_vala_la_VALAFLAGS = \
@@ -30,11 +31,13 @@ libiota_vala_la_CPPFLAGS = \
 	-w \
 	$(GOBJECT_CFLAGS) \
 	$(GEE_CFLAGS) \
+	$(CCURL_CFLAGS) \
 	$(NULL)
 
 libiota_vala_la_LIBADD = \
 	$(GOBJECT_LIBS) \
 	$(GEE_LIBS) \
+	$(CCURL_LIBS) \
 	$(NULL)
 
 test_converter_SOURCES = \
@@ -51,11 +54,13 @@ test_converter_CPPFLAGS = \
 	-w \
 	$(GOBJECT_CFLAGS) \
 	$(GEE_CFLAGS) \
+	$(CCURL_CFLAGS) \
 	$(NULL)
 
 test_converter_LDADD = \
 	$(GOBJECT_LIBS) \
 	$(GEE_LIBS) \
+	$(CCURL_LIBS) \
 	$(builddir)/libiota-vala.la \
 	$(NULL)
 
