@@ -1,9 +1,15 @@
 using Gee;
 
-public void sample_routine()
+public class Iota : Object
 {
-    ArrayList<int> l = new ArrayList<int>();
-    l.add(1);
-    l.add(2);
-    foreach (int i in l) print(@"$(i)\n");
+    public string host {get; set;}
+    public int port {get; set;}
+    public string provider {get; set;}
+
+    public Iota(string host="http://localhost", int port=14265)
+    {
+        this.host = host;
+        this.port = port;
+        this.provider = @"$(host):$(port)";
+    }
 }

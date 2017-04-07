@@ -3,7 +3,9 @@ iota-vala.vapi
 libiota.c
 crypto/converter.c
 crypto/curl.c
+api/api.c
 testsuites/test_converter/test_converter.c
+extra/test_app/test_app.c
 Makefile.in
 aclocal.m4
 autom4te.cache/

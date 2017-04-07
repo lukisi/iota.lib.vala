@@ -5,6 +5,10 @@ lib_LTLIBRARIES = \
 	libiota-vala.la \
 	$(NULL)
 
+EXTRA_PROGRAMS = \
+	test_app \
+	$(NULL)
+
 TESTS = \
 	test_converter \
 	$(NULL)
@@ -18,6 +22,7 @@ libiota_vala_la_SOURCES = \
 	crypto/converter.vala \
 	crypto/curl.vala \
 	crypto/dep_ccurl.vapi \
+	api/api.vala \
 	$(NULL)
 
 libiota_vala_la_VALAFLAGS = \
@@ -25,17 +30,21 @@ libiota_vala_la_VALAFLAGS = \
 	--library iota-vala \
 	--vapidir $(GEE_PREFIX)/share/vala/vapi \
 	--pkg gee-0.8 \
+	--vapidir $(GIO_PREFIX)/share/vala/vapi \
+	--pkg gio-2.0 \
 	$(NULL)
 
 libiota_vala_la_CPPFLAGS = \
 	-w \
 	$(GOBJECT_CFLAGS) \
+	$(GIO_CFLAGS) \
 	$(GEE_CFLAGS) \
 	$(CCURL_CFLAGS) \
 	$(NULL)
 
 libiota_vala_la_LIBADD = \
 	$(GOBJECT_LIBS) \
+	$(GIO_LIBS) \
 	$(GEE_LIBS) \
 	$(CCURL_LIBS) \
 	$(NULL)
@@ -58,6 +67,30 @@ test_converter_CPPFLAGS = \
 	$(NULL)
 
 test_converter_LDADD = \
+	$(GOBJECT_LIBS) \
+	$(GEE_LIBS) \
+	$(CCURL_LIBS) \
+	$(builddir)/libiota-vala.la \
+	$(NULL)
+
+test_app_SOURCES = \
+	extra/test_app/test_app.vala \
+	iota-vala.vapi \
+	$(NULL)
+
+test_app_VALAFLAGS = \
+	--vapidir $(GEE_PREFIX)/share/vala/vapi \
+	--pkg gee-0.8 \
+	$(NULL)
+
+test_app_CPPFLAGS = \
+	-w \
+	$(GOBJECT_CFLAGS) \
+	$(GEE_CFLAGS) \
+	$(CCURL_CFLAGS) \
+	$(NULL)
+
+test_app_LDADD = \
 	$(GOBJECT_LIBS) \
 	$(GEE_LIBS) \
 	$(CCURL_LIBS) \
