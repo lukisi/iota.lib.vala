@@ -4,6 +4,9 @@ libiota.c
 crypto/converter.c
 crypto/curl.c
 api/api.c
+errors/input_errors.c
+errors/request_errors.c
+utils/make_request.c
 testsuites/test_converter/test_converter.c
 extra/test_app/test_app.c
 Makefile.in

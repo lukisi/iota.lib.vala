@@ -23,6 +23,9 @@ libiota_vala_la_SOURCES = \
 	crypto/curl.vala \
 	crypto/dep_ccurl.vapi \
 	api/api.vala \
+	utils/make_request.vala \
+	errors/input_errors.vala \
+	errors/request_errors.vala \
 	$(NULL)
 
 libiota_vala_la_VALAFLAGS = \
