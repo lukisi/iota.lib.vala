@@ -2,11 +2,24 @@ using Gee;
 
 namespace IotaLibVala
 {
+    internal string json_string_object(Object obj)
+    {
+        Json.Node n = Json.gobject_serialize(obj);
+        Json.Generator g = new Json.Generator();
+        g.root = n;
+        string ret = g.to_data(null);
+        return ret;
+    }
+
     public class Request : Object
     {
         // TODO XMLHttpRequest
         public signal void ready_state_change();
         public int ready_state;
+        public void send(string msg) throws Error
+        {
+            error("not implemented yet.");
+        }
     }
 
     public class MakeRequest : Object
@@ -29,7 +42,7 @@ namespace IotaLibVala
                 }
             });
             try {
-                // TODO
+                request.send(json_string_object(command));
             } catch (Error e) {
                 throw new RequestError.INVALID_RESPONSE(@"Invalid Response: $(e.message)");
             }

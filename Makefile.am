@@ -35,6 +35,8 @@ libiota_vala_la_VALAFLAGS = \
 	--pkg gee-0.8 \
 	--vapidir $(GIO_PREFIX)/share/vala/vapi \
 	--pkg gio-2.0 \
+	--vapidir $(JSON_PREFIX)/share/vala-0.32/vapi \
+	--pkg json-glib-1.0 \
 	$(NULL)
 
 libiota_vala_la_CPPFLAGS = \
@@ -42,6 +44,7 @@ libiota_vala_la_CPPFLAGS = \
 	$(GOBJECT_CFLAGS) \
 	$(GIO_CFLAGS) \
 	$(GEE_CFLAGS) \
+	$(JSON_CFLAGS) \
 	$(CCURL_CFLAGS) \
 	$(NULL)
 
@@ -49,6 +52,7 @@ libiota_vala_la_LIBADD = \
 	$(GOBJECT_LIBS) \
 	$(GIO_LIBS) \
 	$(GEE_LIBS) \
+	$(JSON_LIBS) \
 	$(CCURL_LIBS) \
 	$(NULL)
 
@@ -86,6 +90,8 @@ test_app_VALAFLAGS = \
 	--pkg gee-0.8 \
 	--vapidir $(GIO_PREFIX)/share/vala/vapi \
 	--pkg gio-2.0 \
+	--vapidir $(JSON_PREFIX)/share/vala-0.32/vapi \
+	--pkg json-glib-1.0 \
 	$(NULL)
 
 test_app_CPPFLAGS = \
@@ -93,6 +99,7 @@ test_app_CPPFLAGS = \
 	$(GOBJECT_CFLAGS) \
 	$(GEE_CFLAGS) \
 	$(GIO_CFLAGS) \
+	$(JSON_CFLAGS) \
 	$(CCURL_CFLAGS) \
 	$(NULL)
 
@@ -100,6 +107,7 @@ test_app_LDADD = \
 	$(GOBJECT_LIBS) \
 	$(GEE_LIBS) \
 	$(GIO_LIBS) \
+	$(JSON_LIBS) \
 	$(CCURL_LIBS) \
 	$(builddir)/libiota-vala.la \
 	$(NULL)
