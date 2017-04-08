@@ -81,18 +81,22 @@ test_app_SOURCES = \
 test_app_VALAFLAGS = \
 	--vapidir $(GEE_PREFIX)/share/vala/vapi \
 	--pkg gee-0.8 \
+	--vapidir $(GIO_PREFIX)/share/vala/vapi \
+	--pkg gio-2.0 \
 	$(NULL)
 
 test_app_CPPFLAGS = \
 	-w \
 	$(GOBJECT_CFLAGS) \
 	$(GEE_CFLAGS) \
+	$(GIO_CFLAGS) \
 	$(CCURL_CFLAGS) \
 	$(NULL)
 
 test_app_LDADD = \
 	$(GOBJECT_LIBS) \
 	$(GEE_LIBS) \
+	$(GIO_LIBS) \
 	$(CCURL_LIBS) \
 	$(builddir)/libiota-vala.la \
 	$(NULL)
