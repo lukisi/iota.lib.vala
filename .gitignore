@@ -4,6 +4,7 @@ libiota.c
 crypto/converter.c
 crypto/curl.c
 api/api.c
+api/api_commands.c
 errors/input_errors.c
 errors/request_errors.c
 utils/make_request.c
@@ -33,5 +34,5 @@ builds
 *~
 .anjuta/
 .anjuta_sym_db.db
-iota.lib.vala.anjuta
+*.anjuta
 

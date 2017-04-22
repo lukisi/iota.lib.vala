@@ -6,16 +6,26 @@ namespace IotaLibVala
 
     public class Api : Object
     {
-        public Object make_request {get; set;}
-        public Api()
+        public MakeRequest make_request {get; set;}
+
+        public Api(MakeRequest make_request, bool sandbox)
         {
-            // TODO make_request = provider
+            this.make_request = make_request;
+            if (sandbox)
+            {
+                error("sandbox not implemented");
+            }
         }
 
-        public async void send_command()
+        public async string send_command(Object command)
         {
-            // TODO
-            error("not implemented yet");
+            return yield make_request.send(command);
+        }
+
+        public async string get_node_info()
+        {
+            var command = ApiCommand.get_node_info();
+            return yield send_command(command);
         }
 
         public async ArrayList<Object> get_new_address(string seed, int index, int? total, int security, bool checksum)

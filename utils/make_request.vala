@@ -1,4 +1,5 @@
 using Gee;
+using Soup;
 
 namespace IotaLibVala
 {
@@ -13,39 +14,65 @@ namespace IotaLibVala
 
     public class Request : Object
     {
-        // TODO XMLHttpRequest
-        public signal void ready_state_change();
-        public int ready_state;
-        public void send(string msg) throws Error
+        private Session session;
+        private Soup.Message msg;
+        public Request(string provider)
         {
-            error("not implemented yet.");
+            // create an HTTP session
+            session = new Session();
+            msg = new Soup.Message("POST", provider);
+        }
+
+        public async string send(string json) throws Error
+        {
+            debug(@"Request: sending message to provider = $(msg.get_uri().to_string(false))");
+            debug(@"Request: message = '$(json)'");
+            SourceFunc cb = send.callback;
+            msg.request_body.append_take(json.data);
+            msg.request_headers.append("Content-Type", "application/json");
+            // async send the HTTP request and register callback
+            session.queue_message(msg, (ses, mes) => {
+                assert(mes == msg);
+                cb();
+            });
+            yield;
+            if (msg.status_code != (uint)Soup.Status.OK)
+            {
+                debug(@"Request: report status = $(msg.status_code)");
+                throw new RequestError.REQUEST_ERROR(@"status = $(msg.status_code)");
+            }
+            string ret = (string)msg.response_body.data;
+            debug(@"Request: report response = '$(ret)'");
+            return ret;
         }
     }
 
     public class MakeRequest : Object
     {
         public string provider {get; set;}
-        public Request open()
+        public bool token {get; set;}
+
+        public MakeRequest(string provider, bool token)
         {
-            var request = new Request();
-            // TODO
-            error("not implemented yet.");
-            // return request;
+            this.provider = provider;
+            this.token = token;
         }
 
-        public void send(Object command, SourceFunc callback) throws RequestError
+        private Request open()
+        {
+            return new Request(provider);
+        }
+
+        public async string send(Object command) throws RequestError
         {
             var request = open();
-            request.ready_state_change.connect(() => {
-                if (request.ready_state == 4) {
-                    // TODO
-                }
-            });
+            string ret;
             try {
-                request.send(json_string_object(command));
+                ret = yield request.send(json_string_object(command));
             } catch (Error e) {
                 throw new RequestError.INVALID_RESPONSE(@"Invalid Response: $(e.message)");
             }
+            return ret;
         }
     }
 }
