@@ -28,8 +28,12 @@ void test_2()
     var iota = new Iota("http://service.iotasupport.com");
 
     iota.api.get_node_info.begin((obj, res) => {
-        string output = ((Api)obj).get_node_info.end(res);
-        print(@"nodeinfo: '$(output)'\n");
+        try {
+            string output = ((Api)obj).get_node_info.end(res);
+            print(@"nodeinfo: '$(output)'\n");
+        } catch (RequestError e) {
+            warning(@"RequestError: $(e.message)");
+        }
         loop.quit();
     });
 

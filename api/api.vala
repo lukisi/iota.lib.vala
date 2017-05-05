@@ -17,12 +17,12 @@ namespace IotaLibVala
             }
         }
 
-        public async string send_command(Object command)
+        public async string send_command(Object command) throws RequestError
         {
             return yield make_request.send(command);
         }
 
-        public async string get_node_info()
+        public async string get_node_info() throws RequestError
         {
             var command = ApiCommand.get_node_info();
             return yield send_command(command);
