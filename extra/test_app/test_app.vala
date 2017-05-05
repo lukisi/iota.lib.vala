@@ -3,6 +3,8 @@ using IotaLibVala;
 
 void main()
 {
+    bool f = false;
+    if (f) test_1();
     test_2();
 }
 

@@ -2,7 +2,10 @@ using Gee;
 
 namespace IotaLibVala
 {
-    public class Address : Object {}
+    public class Address : Object
+    {
+        public string s {get; set;}
+    }
 
     public class Api : Object
     {
@@ -45,9 +48,34 @@ namespace IotaLibVala
             error("not implemented yet");
         }
 
-        public Object make_new_address(string seed, int index, int security, bool checksum)
+        private Object make_new_address(string seed, int index, int security, bool checksum)
         {
-            return new Address();
+            Converter c = Converter.singleton;
+            Gee.List<int64?> trits = c.trits_from_trytes(seed);
+            Signing s = Signing.singleton;
+            var key = s.key(trits, index, security);
+            var digests = s.digests(key);
+            var addressTrits = s.address(digests);
+            var address = c.trytes(addressTrits);
+
+            if (checksum) {
+                error("not implemented yet Utils.addChecksum");
+            }
+
+/*
+    var key = Signing.key(Converter.trits(seed), index, security);
+    var digests = Signing.digests(key);
+    var addressTrits = Signing.address(digests);
+    var address = Converter.trytes(addressTrits)
+
+    if (checksum) {
+        address = Utils.addChecksum(address);
+    }
+*/
+
+            var ret = new Address();
+            ret.s = address;
+            return ret;
         }
     }
 }

@@ -2,6 +2,8 @@ iota-vala.h
 iota-vala.vapi
 libiota.c
 crypto/converter.c
+crypto/signing.c
+crypto/bundle.c
 crypto/curl.c
 api/api.c
 api/api_commands.c

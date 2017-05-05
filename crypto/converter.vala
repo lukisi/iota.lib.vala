@@ -19,7 +19,7 @@ namespace IotaLibVala
             CCurl.Converter.init_converter();
         }
 
-        public ArrayList<int64?> trits_from_trytes(string trytes)
+        public Gee.List<int64?> trits_from_trytes(string trytes)
         {
             int64 * buf = CCurl.Converter.trits_from_trytes((char *)trytes, trytes.length);
             int retlen = trytes.length * NUMBER_OF_TRITS_IN_A_TRYTE;
@@ -29,7 +29,7 @@ namespace IotaLibVala
             return ret;
         }
 
-        public string trytes(ArrayList<int64?> trits)
+        public string trytes(Gee.List<int64?> trits)
         {
             int64 [] _trits = new int64[trits.size];
             for (int i = 0; i < trits.size; i++) _trits[i] = trits[i];

@@ -15,6 +15,12 @@ namespace CCurl
         [CCode (cname = "absorb")]
         public void absorb(_Curl *ctx, int64 *trits, int offset, int length);
 
+        [CCode (cname = "squeeze")]
+        public void squeeze(_Curl *ctx, int64 *trits, int offset, int length);
+
+        [CCode (cname = "reset")]
+        public void reset(_Curl *ctx);
+
         /*
 
         #define NUMBER_OF_ROUNDS 27
