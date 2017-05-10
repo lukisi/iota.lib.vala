@@ -1,11 +1,11 @@
 using Gee;
 using IotaLibVala;
 
-void main()
+void main(string[] args)
 {
-    bool f = false;
-    if (f) test_1();
-    test_2();
+    assert(args.length == 2);
+    if (args[1] == "1") test_1();
+    if (args[1] == "2") test_2();
 }
 
 void test_1()
@@ -16,6 +16,9 @@ void test_1()
     iota.api.get_new_address.begin("HELP", 0, 10, 2, false, (obj, res) => {
         var result = ((Api)obj).get_new_address.end(res);
         print(@"List of $(result.size) items.\n");
+        foreach (var a in result) {
+            print(@" * $(a)\n");
+        }
         loop.quit();
     });
 

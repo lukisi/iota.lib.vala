@@ -5,6 +5,7 @@ namespace IotaLibVala
     public class Address : Object
     {
         public string s {get; set;}
+        public string to_string() {return s;}
     }
 
     public class Api : Object
@@ -31,11 +32,11 @@ namespace IotaLibVala
             return yield send_command(command);
         }
 
-        public async ArrayList<Object> get_new_address(string seed, int index, int? total, int security, bool checksum)
+        public async ArrayList<Address> get_new_address(string seed, int index, int? total, int security, bool checksum)
         {
             // TODO validate the seed
 
-            ArrayList<Object> ret = new ArrayList<Object>();
+            ArrayList<Address> ret = new ArrayList<Address>();
 
             if (total != null)
             {
@@ -48,30 +49,20 @@ namespace IotaLibVala
             error("not implemented yet");
         }
 
-        private Object make_new_address(string seed, int index, int security, bool checksum)
+        private Address make_new_address(string seed, int index, int security, bool checksum)
         {
             Converter c = Converter.singleton;
             Gee.List<int64?> trits = c.trits_from_trytes(seed);
             Signing s = Signing.singleton;
             var key = s.key(trits, index, security);
             var digests = s.digests(key);
-            var addressTrits = s.address(digests);
-            var address = c.trytes(addressTrits);
+            var address_trits = s.address(digests);
+            var address = c.trytes(address_trits);
 
             if (checksum) {
                 error("not implemented yet Utils.addChecksum");
+                // address = Utils.addChecksum(address);
             }
-
-/*
-    var key = Signing.key(Converter.trits(seed), index, security);
-    var digests = Signing.digests(key);
-    var addressTrits = Signing.address(digests);
-    var address = Converter.trytes(addressTrits)
-
-    if (checksum) {
-        address = Utils.addChecksum(address);
-    }
-*/
 
             var ret = new Address();
             ret.s = address;
