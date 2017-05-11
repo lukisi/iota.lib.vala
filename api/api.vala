@@ -60,8 +60,7 @@ namespace IotaLibVala
             var address = c.trytes(address_trits);
 
             if (checksum) {
-                error("not implemented yet Utils.addChecksum");
-                // address = Utils.addChecksum(address);
+                address = Utils.add_checksum(address);
             }
 
             var ret = new Address();

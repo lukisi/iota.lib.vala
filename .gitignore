@@ -10,6 +10,7 @@ api/api_commands.c
 errors/input_errors.c
 errors/request_errors.c
 utils/make_request.c
+utils/utils.c
 testsuites/test_converter/test_converter.c
 extra/test_app/test_app.c
 Makefile.in

@@ -25,6 +25,7 @@ libiota_vala_la_SOURCES = \
 	api/api.vala \
 	api/api_commands.vala \
 	utils/make_request.vala \
+	utils/utils.vala \
 	errors/input_errors.vala \
 	errors/request_errors.vala \
 	crypto/bundle.vala \
