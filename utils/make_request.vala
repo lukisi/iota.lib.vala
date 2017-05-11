@@ -3,15 +3,6 @@ using Soup;
 
 namespace IotaLibVala
 {
-    internal string json_string_object(Object obj)
-    {
-        Json.Node n = Json.gobject_serialize(obj);
-        Json.Generator g = new Json.Generator();
-        g.root = n;
-        string ret = g.to_data(null);
-        return ret;
-    }
-
     public class Request : Object
     {
         private Session session;
@@ -63,12 +54,12 @@ namespace IotaLibVala
             return new Request(provider);
         }
 
-        public async string send(Object command) throws RequestError
+        public async string send(string json_command) throws RequestError
         {
             var request = open();
             string ret;
             try {
-                ret = yield request.send(json_string_object(command));
+                ret = yield request.send(json_command);
             } catch (Error e) {
                 throw new RequestError.INVALID_RESPONSE(@"Invalid Response: $(e.message)");
             }

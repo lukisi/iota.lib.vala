@@ -24,6 +24,7 @@ libiota_vala_la_SOURCES = \
 	crypto/dep_ccurl.vapi \
 	api/api.vala \
 	api/api_commands.vala \
+	api/api_results.vala \
 	utils/make_request.vala \
 	utils/utils.vala \
 	errors/input_errors.vala \

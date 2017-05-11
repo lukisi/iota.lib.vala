@@ -8,6 +8,12 @@ namespace IotaLibVala
         public string to_string() {return s;}
     }
 
+    public class Transaction : Object
+    {
+        public string t_hash {get; set;}
+        public string to_string() {return t_hash;}
+    }
+
     public class Api : Object
     {
         public MakeRequest make_request {get; set;}
@@ -21,32 +27,71 @@ namespace IotaLibVala
             }
         }
 
-        public async string send_command(Object command) throws RequestError
+        public async string send_command(string json_command) throws RequestError
         {
-            return yield make_request.send(command);
+            return yield make_request.send(json_command);
         }
 
         public async string get_node_info() throws RequestError
         {
-            var command = ApiCommand.get_node_info();
-            return yield send_command(command);
+            var json_command = ApiCommand.get_node_info();
+            return yield send_command(json_command);
         }
 
-        public async ArrayList<Address> get_new_address(string seed, int index, int? total, int security, bool checksum)
+        public async Gee.List<Transaction> find_transactions_for_address(string address) throws RequestError
         {
+            var json_command = ApiCommand.find_transactions_for_address(address);
+            string json_result = yield send_command(json_command);
+            Gee.List<Transaction> ret = ApiResults.find_transactions_for_address(json_result);
+            return ret;
+        }
+
+        public class OptionsGetNewAddress : Object
+        {
+            public int index;
+            public int? total;
+            public int security;
+            public bool checksum;
+            public bool return_all;
+            public OptionsGetNewAddress()
+            {
+                index = 0;
+                total = null;
+                security = 2;
+                checksum = false;
+                return_all = false;
+            }
+        }
+
+        public async ArrayList<Address>
+        get_new_address(string seed, OptionsGetNewAddress options)
+        throws RequestError
+        {
+            int index = options.index;
             // TODO validate the seed
 
             ArrayList<Address> ret = new ArrayList<Address>();
 
-            if (total != null)
+            if (options.total != null)
             {
-                for (var i = 0; i < total; i++, index++) {
-                    ret.add(make_new_address(seed, index, security, checksum));
+                for (var i = 0; i < options.total; i++, index++) {
+                    ret.add(make_new_address(seed, index, options.security, options.checksum));
                 }
                 return ret;
             }
 
-            error("not implemented yet");
+            Address new_address;
+            while (true)
+            {
+                new_address = make_new_address(seed, index, options.security, options.checksum);
+                var transactions = yield find_transactions_for_address(new_address.s);
+                if (options.return_all) ret.add(new_address);
+                index++;
+                if (transactions.size == 0) break;
+            }
+            if (!options.return_all) ret.add(new_address);
+
+            return ret;
         }
 
         private Address make_new_address(string seed, int index, int security, bool checksum)

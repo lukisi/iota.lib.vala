@@ -16,7 +16,9 @@ void test_1()
     MainLoop loop = new MainLoop();
     var iota = new Iota();
 
-    iota.api.get_new_address.begin(FICTIONALSEED, 0, 10, 2, false, (obj, res) => {
+    Api.OptionsGetNewAddress options = new Api.OptionsGetNewAddress();
+    options.total = 10;
+    iota.api.get_new_address.begin(FICTIONALSEED, options, (obj, res) => {
         var result = ((Api)obj).get_new_address.end(res);
         foreach (var a in result) print(@" * $(a)\n");
         loop.quit();
@@ -30,9 +32,11 @@ void test_1()
 void test_3()
 {
     MainLoop loop = new MainLoop();
-    var iota = new Iota();
+    var iota = new Iota("http://service.iotasupport.com");
 
-    iota.api.get_new_address.begin(FICTIONALSEED, 0, null, 2, true, (obj, res) => {
+    Api.OptionsGetNewAddress options = new Api.OptionsGetNewAddress();
+    options.checksum = true;
+    iota.api.get_new_address.begin(FICTIONALSEED, options, (obj, res) => {
         var result = ((Api)obj).get_new_address.end(res);
         assert(result.size == 1);
         print(@" = $(result[0])\n");

@@ -7,6 +7,7 @@ crypto/bundle.c
 crypto/curl.c
 api/api.c
 api/api_commands.c
+api/api_results.c
 errors/input_errors.c
 errors/request_errors.c
 utils/make_request.c
