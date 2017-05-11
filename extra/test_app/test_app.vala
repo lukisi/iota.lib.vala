@@ -19,9 +19,13 @@ void test_1()
     Api.OptionsGetNewAddress options = new Api.OptionsGetNewAddress();
     options.total = 10;
     iota.api.get_new_address.begin(FICTIONALSEED, options, (obj, res) => {
-        var result = ((Api)obj).get_new_address.end(res);
-        foreach (var a in result) print(@" * $(a)\n");
-        loop.quit();
+        try {
+            var result = ((Api)obj).get_new_address.end(res);
+            foreach (var a in result) print(@" * $(a)\n");
+            loop.quit();
+        } catch (RequestError e) {
+            assert_not_reached(); // not even an RPC API call.
+        }
     });
 
     print("looping.\n");
@@ -37,9 +41,13 @@ void test_3()
     Api.OptionsGetNewAddress options = new Api.OptionsGetNewAddress();
     options.checksum = true;
     iota.api.get_new_address.begin(FICTIONALSEED, options, (obj, res) => {
-        var result = ((Api)obj).get_new_address.end(res);
-        assert(result.size == 1);
-        print(@" = $(result[0])\n");
+        try {
+            var result = ((Api)obj).get_new_address.end(res);
+            assert(result.size == 1);
+            print(@" = $(result[0])\n");
+        } catch (RequestError e) {
+            warning(@"RequestError. Code = $(e.code). Message: $(e.message)");
+        }
         loop.quit();
     });
 

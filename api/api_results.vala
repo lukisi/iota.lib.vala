@@ -8,7 +8,11 @@ namespace IotaLibVala.ApiResults
     {
         ArrayList<Transaction> ret = new ArrayList<Transaction>();
         Json.Parser p_res = new Json.Parser();
-        p_res.load_from_data(json_result);
+        try {
+            p_res.load_from_data(json_result);
+        } catch (Error e) {
+            throw new RequestError.INVALID_RESPONSE("response must be a JSON tree");
+        }
         unowned Json.Node res_rootnode = p_res.get_root();
         Json.Reader r_res = new Json.Reader(res_rootnode);
         if (!r_res.is_object()) throw new RequestError.INVALID_RESPONSE("root must be an object");
