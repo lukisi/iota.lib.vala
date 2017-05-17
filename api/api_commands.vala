@@ -38,4 +38,24 @@ namespace IotaLibVala.ApiCommand
         ret.addresses = {address};
         return json_string_object(ret);
     }
+
+    public class CommandGetBalances : Command
+    {
+        public string[] addresses {get; set;}
+        public int threshold {get; set;}
+        public CommandGetBalances()
+        {
+            this.command = "getBalances";
+        }
+    }
+
+    public string get_balances(Gee.List<Address> addresses, int threshold)
+    {
+        var ret = new CommandGetBalances();
+        string[] _addresses = new string[addresses.size];
+        for (int j = 0; j < addresses.size; j++) _addresses[j] = addresses[j].s;
+        ret.addresses = _addresses;
+        ret.threshold = threshold;
+        return json_string_object(ret);
+    }
 }

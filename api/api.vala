@@ -63,7 +63,7 @@ namespace IotaLibVala
             }
         }
 
-        public async ArrayList<Address>
+        public async Gee.List<Address>
         get_new_address(string seed, OptionsGetNewAddress options)
         throws RequestError
         {
@@ -110,6 +110,15 @@ namespace IotaLibVala
 
             var ret = new Address();
             ret.s = address;
+            return ret;
+        }
+
+        public async ApiResults.GetBalancesResponse get_balances(Gee.List<Address> addresses, int threshold) throws RequestError
+        {
+            // TODO check
+            var json_command = ApiCommand.get_balances(addresses, threshold);
+            string json_result = yield send_command(json_command);
+            ApiResults.GetBalancesResponse ret = ApiResults.get_balances(json_result);
             return ret;
         }
     }

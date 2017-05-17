@@ -7,6 +7,7 @@ lib_LTLIBRARIES = \
 
 EXTRA_PROGRAMS = \
 	test_app \
+	iota_seed_checker \
 	$(NULL)
 
 TESTS = \
@@ -122,6 +123,32 @@ test_app_LDADD = \
 	$(LIBSOUP_LIBS) \
 	$(JSON_LIBS) \
 	$(CCURL_LIBS) \
+	$(builddir)/libiota-vala.la \
+	$(NULL)
+
+iota_seed_checker_SOURCES = \
+	extra/iota_seed_checker/iota_seed_checker.vala \
+	iota-vala.vapi \
+	$(NULL)
+
+iota_seed_checker_VALAFLAGS = \
+	--vapidir $(GEE_PREFIX)/share/vala/vapi \
+	--pkg gee-0.8 \
+	--vapidir $(GIO_PREFIX)/share/vala/vapi \
+	--pkg gio-2.0 \
+	$(NULL)
+
+iota_seed_checker_CPPFLAGS = \
+	-w \
+	$(GOBJECT_CFLAGS) \
+	$(GEE_CFLAGS) \
+	$(GIO_CFLAGS) \
+	$(NULL)
+
+iota_seed_checker_LDADD = \
+	$(GOBJECT_LIBS) \
+	$(GEE_LIBS) \
+	$(GIO_LIBS) \
 	$(builddir)/libiota-vala.la \
 	$(NULL)
 
