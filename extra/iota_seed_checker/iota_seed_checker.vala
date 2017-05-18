@@ -14,13 +14,18 @@ void main()
     print("Exiting.\n");
 }
 
+string seed;
+int total;
+
 async void dostuff()
 {
     Idle.add(dostuff.callback);
     yield;
 
-    string seed = "THROWAWAYSEED";
-    int total = 10;
+    seed = "THROWAWAYSEED";
+    total = 10;
+
+    load_configuration();
 
     var iota = new Iota("http://service.iotasupport.com");
 
@@ -55,4 +60,23 @@ async void dostuff()
         i++;
     }
     print(@"Total value for this seed = $(totalB)\n");
+}
+
+
+void load_configuration()
+{
+    string fname = "config.ini";
+    KeyFile conf = new KeyFile();
+    try
+    {
+        conf.load_from_file(fname, KeyFileFlags.NONE);
+        if (conf.has_group("IOTA_SEED_CHECKER"))
+        {
+            if (conf.has_key("IOTA_SEED_CHECKER", "SEED")) seed = conf.get_string("IOTA_SEED_CHECKER", "SEED");
+            if (conf.has_key("IOTA_SEED_CHECKER", "TOTAL")) total = conf.get_integer("IOTA_SEED_CHECKER", "TOTAL");
+        }
+    }
+    catch (KeyFileError.NOT_FOUND e) {}
+    catch (FileError.NOENT e) {}
+    catch (Error e) {error(e.message);}
 }
