@@ -132,7 +132,7 @@ namespace IotaLibVala
             return ret;
         }
 
-        public async ApiResults.AttachToTangleResponse
+        public async Gee.List<string>
         attach_to_tangle
         (string trunk_transaction,
         string branch_transaction,
@@ -145,7 +145,7 @@ namespace IotaLibVala
                                                            min_weight_magnitude,
                                                            trytes);
             string json_result = yield send_command(json_command);
-            ApiResults.AttachToTangleResponse ret = ApiResults.attach_to_tangle(json_result);
+            Gee.List<string> ret = ApiResults.attach_to_tangle(json_result);
             return ret;
         }
     }

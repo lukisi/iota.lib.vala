@@ -19,15 +19,6 @@ namespace IotaLibVala.ApiResults
         public string branch_transaction;
     }
 
-    public class AttachToTangleResponse
-    {
-        public Gee.List<string> trytes;
-        public AttachToTangleResponse()
-        {
-            trytes = new ArrayList<string>();
-        }
-    }
-
     public Gee.List<Transaction>
     find_transactions_for_address(string json_result)
     throws RequestError
@@ -145,11 +136,11 @@ namespace IotaLibVala.ApiResults
         return ret;
     }
 
-    public AttachToTangleResponse
+    public Gee.List<string>
     attach_to_tangle(string json_result)
     throws RequestError
     {
-        AttachToTangleResponse ret = new AttachToTangleResponse();
+        Gee.List<string> ret = new ArrayList<string>();
         Json.Parser p_res = new Json.Parser();
         try {
             p_res.load_from_data(json_result);
@@ -169,7 +160,7 @@ namespace IotaLibVala.ApiResults
             if (r_res.get_value().get_value_type() != typeof(string))
                 throw new RequestError.INVALID_RESPONSE(@"each element of trytes must be a string");
             string tryte_el = r_res.get_string_value();
-            ret.trytes.add(tryte_el);
+            ret.add(tryte_el);
             r_res.end_element();
         }
         r_res.end_member();
