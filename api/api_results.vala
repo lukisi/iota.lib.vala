@@ -13,6 +13,12 @@ namespace IotaLibVala.ApiResults
         }
     }
 
+    public class GetTransactionsToApproveResponse
+    {
+        public string trunk_transaction;
+        public string branch_transaction;
+    }
+
     public Gee.List<Transaction>
     find_transactions_for_address(string json_result)
     throws RequestError
@@ -95,6 +101,37 @@ namespace IotaLibVala.ApiResults
         if (r_res.get_value().get_value_type() != typeof(int64))
             throw new RequestError.INVALID_RESPONSE(@"milestoneIndex must be a int");
         ret.milestone_index = r_res.get_int_value();
+        r_res.end_member();
+        return ret;
+    }
+
+    public GetTransactionsToApproveResponse
+    get_transactions_to_approve(string json_result)
+    throws RequestError
+    {
+        GetTransactionsToApproveResponse ret = new GetTransactionsToApproveResponse();
+        Json.Parser p_res = new Json.Parser();
+        try {
+            p_res.load_from_data(json_result);
+        } catch (Error e) {
+            throw new RequestError.INVALID_RESPONSE("response must be a JSON tree");
+        }
+        unowned Json.Node res_rootnode = p_res.get_root();
+        Json.Reader r_res = new Json.Reader(res_rootnode);
+        if (!r_res.is_object()) throw new RequestError.INVALID_RESPONSE("root must be an object");
+        if (!r_res.read_member("trunkTransaction")) throw new RequestError.INVALID_RESPONSE("root must have trunkTransaction");
+        if (!r_res.is_value())
+            throw new RequestError.INVALID_RESPONSE(@"trunkTransaction must be a string");
+        if (r_res.get_value().get_value_type() != typeof(string))
+            throw new RequestError.INVALID_RESPONSE(@"trunkTransaction must be a string");
+        ret.trunk_transaction = r_res.get_string_value();
+        r_res.end_member();
+        if (!r_res.read_member("branchTransaction")) throw new RequestError.INVALID_RESPONSE("root must have branchTransaction");
+        if (!r_res.is_value())
+            throw new RequestError.INVALID_RESPONSE(@"branchTransaction must be a string");
+        if (r_res.get_value().get_value_type() != typeof(string))
+            throw new RequestError.INVALID_RESPONSE(@"branchTransaction must be a string");
+        ret.branch_transaction = r_res.get_string_value();
         r_res.end_member();
         return ret;
     }

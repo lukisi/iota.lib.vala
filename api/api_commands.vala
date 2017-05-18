@@ -58,4 +58,20 @@ namespace IotaLibVala.ApiCommand
         ret.threshold = threshold;
         return json_string_object(ret);
     }
+
+    public class CommandGetTransactionsToApprove : Command
+    {
+        public int depth {get; set;}
+        public CommandGetTransactionsToApprove()
+        {
+            this.command = "getTransactionsToApprove";
+        }
+    }
+
+    public string get_transactions_to_approve(int depth)
+    {
+        var ret = new CommandGetTransactionsToApprove();
+        ret.depth = depth;
+        return json_string_object(ret);
+    }
 }

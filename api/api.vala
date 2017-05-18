@@ -113,12 +113,22 @@ namespace IotaLibVala
             return ret;
         }
 
-        public async ApiResults.GetBalancesResponse get_balances(Gee.List<Address> addresses, int threshold) throws RequestError
+        public async ApiResults.GetBalancesResponse
+        get_balances(Gee.List<Address> addresses, int threshold) throws RequestError
         {
             // TODO check
             var json_command = ApiCommand.get_balances(addresses, threshold);
             string json_result = yield send_command(json_command);
             ApiResults.GetBalancesResponse ret = ApiResults.get_balances(json_result);
+            return ret;
+        }
+
+        public async ApiResults.GetTransactionsToApproveResponse
+        get_transactions_to_approve(int depth) throws RequestError
+        {
+            var json_command = ApiCommand.get_transactions_to_approve(depth);
+            string json_result = yield send_command(json_command);
+            ApiResults.GetTransactionsToApproveResponse ret = ApiResults.get_transactions_to_approve(json_result);
             return ret;
         }
     }
