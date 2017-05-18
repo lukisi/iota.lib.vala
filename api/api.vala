@@ -131,5 +131,22 @@ namespace IotaLibVala
             ApiResults.GetTransactionsToApproveResponse ret = ApiResults.get_transactions_to_approve(json_result);
             return ret;
         }
+
+        public async ApiResults.AttachToTangleResponse
+        attach_to_tangle
+        (string trunk_transaction,
+        string branch_transaction,
+        int min_weight_magnitude,
+        Gee.List<string> trytes)
+        throws RequestError
+        {
+            var json_command = ApiCommand.attach_to_tangle(trunk_transaction,
+                                                           branch_transaction,
+                                                           min_weight_magnitude,
+                                                           trytes);
+            string json_result = yield send_command(json_command);
+            ApiResults.AttachToTangleResponse ret = ApiResults.attach_to_tangle(json_result);
+            return ret;
+        }
     }
 }

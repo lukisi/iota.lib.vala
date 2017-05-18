@@ -74,4 +74,33 @@ namespace IotaLibVala.ApiCommand
         ret.depth = depth;
         return json_string_object(ret);
     }
+
+    public class CommandAttachToTangle : Command
+    {
+        public string trunkTransaction {get; set;}
+        public string branchTransaction {get; set;}
+        public int minWeightMagnitude {get; set;}
+        public string[] trytes {get; set;}
+        public CommandAttachToTangle()
+        {
+            this.command = "attachToTangle";
+        }
+    }
+
+    public string
+    attach_to_tangle
+    (string trunk_transaction,
+    string branch_transaction,
+    int min_weight_magnitude,
+    Gee.List<string> trytes)
+    {
+        var ret = new CommandAttachToTangle();
+        ret.trunkTransaction = trunk_transaction;
+        ret.branchTransaction = branch_transaction;
+        ret.minWeightMagnitude = min_weight_magnitude;
+        string[] _trytes = new string[trytes.size];
+        for (int j = 0; j < trytes.size; j++) _trytes[j] = trytes[j];
+        ret.trytes = _trytes;
+        return json_string_object(ret);
+    }
 }
