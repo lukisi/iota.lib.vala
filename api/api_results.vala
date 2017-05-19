@@ -166,4 +166,36 @@ namespace IotaLibVala.ApiResults
         r_res.end_member();
         return ret;
     }
+
+    public void
+    broadcast_transaction(string json_result)
+    throws RequestError
+    {
+        Json.Parser p_res = new Json.Parser();
+        try {
+            p_res.load_from_data(json_result);
+        } catch (Error e) {
+            throw new RequestError.INVALID_RESPONSE("response must be a JSON tree");
+        }
+        unowned Json.Node res_rootnode = p_res.get_root();
+        Json.Reader r_res = new Json.Reader(res_rootnode);
+        if (!r_res.is_object()) throw new RequestError.INVALID_RESPONSE("root must be an object");
+        // void
+    }
+
+    public void
+    store_transaction(string json_result)
+    throws RequestError
+    {
+        Json.Parser p_res = new Json.Parser();
+        try {
+            p_res.load_from_data(json_result);
+        } catch (Error e) {
+            throw new RequestError.INVALID_RESPONSE("response must be a JSON tree");
+        }
+        unowned Json.Node res_rootnode = p_res.get_root();
+        Json.Reader r_res = new Json.Reader(res_rootnode);
+        if (!r_res.is_object()) throw new RequestError.INVALID_RESPONSE("root must be an object");
+        // void
+    }
 }

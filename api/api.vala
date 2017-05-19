@@ -148,5 +148,32 @@ namespace IotaLibVala
             Gee.List<string> ret = ApiResults.attach_to_tangle(json_result);
             return ret;
         }
+
+        public async void
+        broadcast_transaction(Gee.List<string> trytes) throws RequestError
+        {
+            // TODO check inputValidator.isArrayOfAttachedTrytes(trytes)
+            var json_command = ApiCommand.broadcast_transaction(trytes);
+            string json_result = yield send_command(json_command);
+            ApiResults.broadcast_transaction(json_result);
+            // void
+        }
+
+        public async void
+        store_transaction(Gee.List<string> trytes) throws RequestError
+        {
+            // TODO check inputValidator.isArrayOfAttachedTrytes(trytes)
+            var json_command = ApiCommand.store_transaction(trytes);
+            string json_result = yield send_command(json_command);
+            ApiResults.store_transaction(json_result);
+            // void
+        }
+
+        public async void
+        broadcast_and_store(Gee.List<string> trytes) throws RequestError
+        {
+            yield broadcast_transaction(trytes);
+            yield store_transaction(trytes);
+        }
     }
 }
