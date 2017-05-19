@@ -157,14 +157,14 @@ namespace IotaLibVala
         Gee.List<string> trytes)
         throws InputError, RequestError
         {
-            // TODO check inputValidator.isHash(trunk_transaction)
-            if (false==true) throw new InputError.INVALID_TRUNK_OR_BRANCH(trunk_transaction);
-            // TODO check inputValidator.isHash(branch_transaction)
-            if (false==true) throw new InputError.INVALID_TRUNK_OR_BRANCH(branch_transaction);
-            // TODO check inputValidator.isValue(min_weight_magnitude)
-            if (false==true) throw new InputError.NOT_INT("");
-            // TODO check inputValidator.isArrayOfTrytes(trytes)
-            if (false==true) throw new InputError.INVALID_TRYTES("");
+            if (! InputValidator.is_hash(trunk_transaction))
+                throw new InputError.INVALID_TRUNK_OR_BRANCH(trunk_transaction);
+            if (! InputValidator.is_hash(branch_transaction))
+                throw new InputError.INVALID_TRUNK_OR_BRANCH(branch_transaction);
+            if (! InputValidator.is_value(min_weight_magnitude))
+                throw new InputError.NOT_INT("");
+            if (! InputValidator.is_array_of_trytes(trytes))
+                throw new InputError.INVALID_TRYTES("");
 
             var json_command = ApiCommand.attach_to_tangle(trunk_transaction,
                                                            branch_transaction,

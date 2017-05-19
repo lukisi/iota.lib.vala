@@ -12,6 +12,7 @@ errors/input_errors.c
 errors/request_errors.c
 utils/make_request.c
 utils/utils.c
+utils/input_validator.c
 testsuites/test_converter/test_converter.c
 extra/test_app/test_app.c
 extra/iota_seed_checker/iota_seed_checker.c
