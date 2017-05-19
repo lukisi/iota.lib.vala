@@ -17,14 +17,12 @@ namespace IotaLibVala
     public class Api : Object
     {
         public MakeRequest make_request {get; set;}
+        public bool sandbox {get; set;}
 
         public Api(MakeRequest make_request, bool sandbox)
         {
             this.make_request = make_request;
-            if (sandbox)
-            {
-                error("sandbox not implemented");
-            }
+            this.sandbox = sandbox;
         }
 
         public async string send_command(string json_command) throws RequestError
@@ -123,6 +121,25 @@ namespace IotaLibVala
             return ret;
         }
 
+        public async
+        void /*TODO*/
+        send_trytes
+        (Gee.List<string> trytes, int depth, int min_weight_magnitude)
+        throws InputError, RequestError
+        {
+            var to_approve = yield get_transactions_to_approve(depth);
+            var attached = yield attach_to_tangle(to_approve.trunk_transaction,
+                                                  to_approve.branch_transaction,
+                                                  min_weight_magnitude,
+                                                  trytes);
+            if (sandbox)
+            {
+                error("sandbox not implemented");
+            }
+            yield broadcast_and_store(attached);
+            // TODO ret
+        }
+
         public async ApiResults.GetTransactionsToApproveResponse
         get_transactions_to_approve(int depth) throws RequestError
         {
@@ -138,8 +155,17 @@ namespace IotaLibVala
         string branch_transaction,
         int min_weight_magnitude,
         Gee.List<string> trytes)
-        throws RequestError
+        throws InputError, RequestError
         {
+            // TODO check inputValidator.isHash(trunk_transaction)
+            if (false==true) throw new InputError.INVALID_TRUNK_OR_BRANCH(trunk_transaction);
+            // TODO check inputValidator.isHash(branch_transaction)
+            if (false==true) throw new InputError.INVALID_TRUNK_OR_BRANCH(branch_transaction);
+            // TODO check inputValidator.isValue(min_weight_magnitude)
+            if (false==true) throw new InputError.NOT_INT("");
+            // TODO check inputValidator.isArrayOfTrytes(trytes)
+            if (false==true) throw new InputError.INVALID_TRYTES("");
+
             var json_command = ApiCommand.attach_to_tangle(trunk_transaction,
                                                            branch_transaction,
                                                            min_weight_magnitude,
