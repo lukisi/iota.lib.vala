@@ -49,11 +49,11 @@ namespace IotaLibVala.ApiCommand
         }
     }
 
-    public string get_balances(Gee.List<Address> addresses, int threshold)
+    public string get_balances(Gee.List<string> addresses, int threshold)
     {
         var ret = new CommandGetBalances();
         string[] _addresses = new string[addresses.size];
-        for (int j = 0; j < addresses.size; j++) _addresses[j] = addresses[j].s;
+        for (int j = 0; j < addresses.size; j++) _addresses[j] = addresses[j];
         ret.addresses = _addresses;
         ret.threshold = threshold;
         return json_string_object(ret);

@@ -31,7 +31,7 @@ async void dostuff()
 
     Api.OptionsGetNewAddress options = new Api.OptionsGetNewAddress();
     options.total = total;
-    Gee.List<Address> addresses;
+    Gee.List<string> addresses;
     try {
         addresses = yield iota.api.get_new_address(seed, options);
     } catch (RequestError e) {
@@ -52,10 +52,10 @@ async void dostuff()
         assert(b != null);
         totalB += b; 
         if (b > 0) {
-            print(@"$(i+1) The address $(addresses[i].s) has a balance of: $(b)\n");
+            print(@"$(i+1) The address $(addresses[i]) has a balance of: $(b)\n");
             print("Balance detected!!!\n");
         } else {
-            print(@"$(i+1) The address $(addresses[i].s) has a balance of: $(b)\n");
+            print(@"$(i+1) The address $(addresses[i]) has a balance of: $(b)\n");
         };
         i++;
     }

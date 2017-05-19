@@ -2,16 +2,20 @@ using Gee;
 
 namespace IotaLibVala
 {
-    public class Address : Object
-    {
-        public string s {get; set;}
-        public string to_string() {return s;}
-    }
-
     public class Transaction : Object
     {
-        public string t_hash {get; set;}
-        public string to_string() {return t_hash;}
+        public string hash {get; set;}
+        public string signatureMessageFragment {get; set;}
+        public string address {get; set;}
+        public int64 @value {get; set;}
+        public string tag {get; set;}
+        public int64 timestamp {get; set;}
+        public int64 currentIndex {get; set;}
+        public int64 lastIndex {get; set;}
+        public string bundle {get; set;}
+        public string trunkTransaction {get; set;}
+        public string branchTransaction {get; set;}
+        public string nonce {get; set;}
     }
 
     public class Api : Object
@@ -36,11 +40,11 @@ namespace IotaLibVala
             return yield send_command(json_command);
         }
 
-        public async Gee.List<Transaction> find_transactions_for_address(string address) throws RequestError
+        public async Gee.List<string> find_transactions_for_address(string address) throws RequestError
         {
             var json_command = ApiCommand.find_transactions_for_address(address);
             string json_result = yield send_command(json_command);
-            Gee.List<Transaction> ret = ApiResults.find_transactions_for_address(json_result);
+            Gee.List<string> ret = ApiResults.find_transactions_for_address(json_result);
             return ret;
         }
 
@@ -61,14 +65,14 @@ namespace IotaLibVala
             }
         }
 
-        public async Gee.List<Address>
+        public async Gee.List<string>
         get_new_address(string seed, OptionsGetNewAddress options)
         throws RequestError
         {
             int index = options.index;
             // TODO validate the seed
 
-            ArrayList<Address> ret = new ArrayList<Address>();
+            ArrayList<string> ret = new ArrayList<string>();
 
             if (options.total != null)
             {
@@ -78,11 +82,11 @@ namespace IotaLibVala
                 return ret;
             }
 
-            Address new_address;
+            string new_address;
             while (true)
             {
                 new_address = make_new_address(seed, index, options.security, options.checksum);
-                var transactions = yield find_transactions_for_address(new_address.s);
+                var transactions = yield find_transactions_for_address(new_address);
                 if (options.return_all) ret.add(new_address);
                 index++;
                 if (transactions.size == 0) break;
@@ -92,7 +96,7 @@ namespace IotaLibVala
             return ret;
         }
 
-        private Address make_new_address(string seed, int index, int security, bool checksum)
+        private string make_new_address(string seed, int index, int security, bool checksum)
         {
             Converter c = Converter.singleton;
             Gee.List<int64?> trits = c.trits_from_trytes(seed);
@@ -106,13 +110,11 @@ namespace IotaLibVala
                 address = Utils.add_checksum(address);
             }
 
-            var ret = new Address();
-            ret.s = address;
-            return ret;
+            return address;
         }
 
         public async ApiResults.GetBalancesResponse
-        get_balances(Gee.List<Address> addresses, int threshold) throws RequestError
+        get_balances(Gee.List<string> addresses, int threshold) throws RequestError
         {
             // TODO check
             var json_command = ApiCommand.get_balances(addresses, threshold);
