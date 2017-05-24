@@ -5,16 +5,16 @@ namespace IotaLibVala
     public class Transaction : Object
     {
         public string hash {get; set;}
-        public string signatureMessageFragment {get; set;}
+        public string signature_message_fragment {get; set;}
         public string address {get; set;}
         public int64 @value {get; set;}
         public string tag {get; set;}
         public int64 timestamp {get; set;}
-        public int64 currentIndex {get; set;}
-        public int64 lastIndex {get; set;}
+        public int64 current_index {get; set;}
+        public int64 last_index {get; set;}
         public string bundle {get; set;}
-        public string trunkTransaction {get; set;}
-        public string branchTransaction {get; set;}
+        public string trunk_transaction {get; set;}
+        public string branch_transaction {get; set;}
         public string nonce {get; set;}
     }
 
