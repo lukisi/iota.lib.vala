@@ -80,10 +80,15 @@ namespace CCurl
         [CCode (cheader_filename = "stdlib.h", cname = "free")]
         public void free(void * ptr);
 
+        [CCode (cname = "long_value")]
+        public int64 long_value(int64 * trits, int offset, int size);
+
         /*
 
         void init_converter();
         trit_t *trits_from_trytes(const char *trytes, int length);
+        char *trytes_from_trits(trit_t *const trits, const int offset, const int size);
+        trit_t long_value(trit_t *const trits, const int offset, const int size);
 
         void getTrits(const char * bytes, int bytelength, trit_t *const trits, int length);
 
@@ -91,7 +96,6 @@ namespace CCurl
         char *bytes_from_trits(trit_t *const trits, const int offset, const int size);
         int indexOf(char *values, char find);
         void copyTrits(trit_t const value, trit_t *const destination, const int offset, const int size);
-        char *trytes_from_trits(trit_t *const trits, const int offset, const int size);
         trit_t tryteValue(trit_t *const trits, const int offset);
         */
     }
