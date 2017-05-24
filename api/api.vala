@@ -123,8 +123,7 @@ namespace IotaLibVala
             return ret;
         }
 
-        public async
-        void /*TODO*/
+        public async Gee.List<Transaction>
         send_trytes
         (Gee.List<string> trytes, int depth, int min_weight_magnitude)
         throws InputError, RequestError
@@ -139,7 +138,10 @@ namespace IotaLibVala
                 error("sandbox not implemented");
             }
             yield broadcast_and_store(attached);
-            // TODO ret
+            var ret = new ArrayList<Transaction>();
+            foreach (string attached_trytes in attached)
+                ret.add(Utils.transaction_object(attached_trytes));
+            return ret;
         }
 
         public async ApiResults.GetTransactionsToApproveResponse
