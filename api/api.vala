@@ -2,7 +2,7 @@ using Gee;
 
 namespace IotaLibVala
 {
-    public errordomain GetInputsError
+    public errordomain BalanceError
     {
         NOT_ENOUGH_BALANCE,
         GENERIC_ERROR
@@ -176,7 +176,7 @@ namespace IotaLibVala
 
         public async GetInputsResponse
         get_inputs(string seed, OptionsGetInputs options)
-        throws RequestError, GetInputsError
+        throws RequestError, BalanceError
         {
             // TODO validate seed
 
@@ -224,8 +224,46 @@ namespace IotaLibVala
                 }
             }
 
-            if (! threshold_reached) throw new GetInputsError.NOT_ENOUGH_BALANCE("Not enough balance");
+            if (! threshold_reached) throw new BalanceError.NOT_ENOUGH_BALANCE("Not enough balance");
             return inputs_object;
+        }
+
+        public class TransferToSend : Object
+        {
+            public string tag;
+            public string message;
+            public string address;
+            public int64 @value;
+        }
+
+        public class SendTransferOptions : Object
+        {
+            public string address;
+            public Gee.List<Object> inputs;
+            public int security;
+        }
+
+        public async Gee.List<Transaction>
+        send_transfer
+        (string seed, int depth, int min_weight_magnitude,
+         Gee.List<TransferToSend> transfers,
+         SendTransferOptions options)
+        throws InputError, RequestError
+        {
+            // TODO validate input
+            var trytes = yield prepare_transfers(seed, transfers, options);
+            return yield send_trytes(trytes, depth, min_weight_magnitude);
+        }
+
+        public async Gee.List<string>
+        prepare_transfers
+        (
+         string seed,
+         Gee.List<TransferToSend> transfers,
+         SendTransferOptions options)
+        throws RequestError
+        {
+            error("not implemented yet");
         }
 
         public async Gee.List<Transaction>

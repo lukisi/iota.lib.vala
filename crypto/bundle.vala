@@ -9,6 +9,12 @@ namespace IotaLibVala
             error("not yet implemented");
         }
 
+        public Gee.List<Transaction> bundle {
+            get {
+                error("not yet implemented");
+            }
+        }
+
         public void add_entry()
         {
             error("not yet implemented");
