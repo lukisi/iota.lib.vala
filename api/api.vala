@@ -2,6 +2,12 @@ using Gee;
 
 namespace IotaLibVala
 {
+    public errordomain GetInputsError
+    {
+        NOT_ENOUGH_BALANCE,
+        GENERIC_ERROR
+    }
+
     public class Transaction : Object
     {
         public string hash {get; set;}
@@ -121,6 +127,105 @@ namespace IotaLibVala
             string json_result = yield send_command(json_command);
             ApiResults.GetBalancesResponse ret = ApiResults.get_balances(json_result);
             return ret;
+        }
+
+        public class OptionsGetInputs : Object
+        {
+            public int start;
+            public int end;
+            public int64 threshold;
+            public int security;
+            public OptionsGetInputs()
+            {
+                start = 0;
+                end = 0;
+                threshold = 0;
+                security = 2;
+            }
+        }
+
+        public class GetInputsInputValue : Object
+        {
+            public string address;
+            public int64 balance;
+            public int key_index;
+            public int security;
+            public GetInputsInputValue
+            (string address,
+             int64 balance,
+             int key_index,
+             int security)
+            {
+                this.address = address;
+                this.balance = balance;
+                this.key_index = key_index;
+                this.security = security;
+            }
+        }
+
+        public class GetInputsResponse : Object
+        {
+            public Gee.List<GetInputsInputValue> inputs;
+            public int64 total_balance;
+            public GetInputsResponse()
+            {
+                inputs = new ArrayList<GetInputsInputValue>();
+                total_balance = 0;
+            }
+        }
+
+        public async GetInputsResponse
+        get_inputs(string seed, OptionsGetInputs options)
+        throws RequestError, GetInputsError
+        {
+            // TODO validate seed
+
+            // TODO validate start + end
+
+            var start = options.start;
+            var end = options.end;
+            var threshold = options.threshold;
+            var security = options.security;
+            Gee.List<string> addresses;
+            if (end != 0)
+            {
+                addresses = new ArrayList<string>();
+                for (int i = start; i < end; i++)
+                {
+                    addresses.add(make_new_address(seed, i, security, false));
+                }
+            }
+            else
+            {
+                OptionsGetNewAddress options_gna = new OptionsGetNewAddress();
+                options_gna.index = start;
+                options_gna.return_all = true;
+                options_gna.security = security;
+                addresses = yield get_new_address(seed, options_gna);
+            }
+
+            // getBalancesAndFormat addresses:
+            var balances = yield get_balances(addresses, 100);
+            var inputs_object = new GetInputsResponse();
+            var threshold_reached = true;
+            if (threshold != 0) threshold_reached = false;
+            for (int i = 0; i < addresses.size; i++)
+            {
+                int64 balance = balances.balances[i];
+                if (balance > 0)
+                {
+                    inputs_object.inputs.add(new GetInputsInputValue(addresses[i], balance, start + i, security));
+                    inputs_object.total_balance += balance;
+                    if (threshold != 0 && inputs_object.total_balance >= threshold)
+                    {
+                        threshold_reached = true;
+                        break;
+                    }
+                }
+            }
+
+            if (! threshold_reached) throw new GetInputsError.NOT_ENOUGH_BALANCE("Not enough balance");
+            return inputs_object;
         }
 
         public async Gee.List<Transaction>
