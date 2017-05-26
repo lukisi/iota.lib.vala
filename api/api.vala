@@ -238,9 +238,15 @@ namespace IotaLibVala
 
         public class SendTransferOptions : Object
         {
-            public string address;
-            public Gee.List<Object> inputs;
+            public string? address;
+            public Gee.List<GetInputsInputValue> inputs;
             public int security;
+            public SendTransferOptions()
+            {
+                address = null;
+                security = 2;
+                inputs = new ArrayList<GetInputsInputValue>();
+            }
         }
 
         public async Gee.List<Transaction>
@@ -248,7 +254,7 @@ namespace IotaLibVala
         (string seed, int depth, int min_weight_magnitude,
          Gee.List<TransferToSend> transfers,
          SendTransferOptions options)
-        throws InputError, RequestError
+        throws InputError, RequestError, BalanceError
         {
             // TODO validate input
             var trytes = yield prepare_transfers(seed, transfers, options);
@@ -261,9 +267,159 @@ namespace IotaLibVala
          string seed,
          Gee.List<TransferToSend> transfers,
          SendTransferOptions options)
-        throws RequestError
+        throws InputError, RequestError, BalanceError
         {
-            error("not implemented yet");
+            if (! InputValidator.is_trytes(seed)) throw new InputError.INVALID_SEED("Invalid seed");
+            if (! InputValidator.is_inputs(options.inputs)) throw new InputError.INVALID_INPUTS("Invalid inputs");
+
+            // TODO validate transfers
+
+            string? remainder_address = options.address;
+            int security = options.security;
+
+            var bundle = new Bundle();
+            int64 total_value = 0;
+            string tag = "";
+            Gee.List<string> signature_fragments = new ArrayList<string>();
+
+            for (int i = 0; i < transfers.size; i++)
+            {
+                var signature_message_length = 1;
+                if (transfers[i].message.length > 2187)
+                {
+                    signature_message_length += transfers[i].message.length / 2187;
+                    var msg_copy = transfers[i].message;
+                    while (msg_copy.length > 0)
+                    {
+                        var fragment = msg_copy.slice(0, 2187);
+                        msg_copy = msg_copy.slice(2187, msg_copy.length);
+                        while (fragment.length < 2187) fragment += "9";
+                        signature_fragments.add(fragment);
+                    }
+                }
+                else
+                {
+                    var fragment = "";
+                    if (transfers[i].message.length > 0)
+                        fragment = transfers[i].message.slice(0, 2187);
+                    while (fragment.length < 2187) fragment += "9";
+                    signature_fragments.add(fragment);
+                }
+                int timestamp = (int)(time_t(null)); // timestamp in seconds
+                tag = transfers[i].tag;
+                if (tag == "") tag = "999999999999999999999999999";
+                while (tag.length < 27) tag += "9";
+                bundle.add_entry(signature_message_length,
+                                 transfers[i].address,
+                                 transfers[i].@value,
+                                 tag,
+                                 timestamp);
+                total_value += transfers[i].@value;
+            }
+
+            Gee.List<GetInputsInputValue> add_remainder_inputs;
+            if (total_value > 0)
+            {
+                if (! options.inputs.is_empty)
+                {
+                    var inputs_addresses = new ArrayList<string>();
+                    foreach (var el in options.inputs) inputs_addresses.add(el.address);
+                    var balances = yield get_balances(inputs_addresses, 100);
+                    var confirmed_inputs = new ArrayList<GetInputsInputValue>();
+                    int64 total_balance = 0;
+                    for (int i = 0; i < balances.balances.size; i++)
+                    {
+                        var this_balance = balances.balances[i];
+                        if (this_balance > 0)
+                        {
+                            total_balance += this_balance;
+                            var el = options.inputs[i];
+                            el.balance = this_balance;
+                            confirmed_inputs.add(el);
+                            if (total_balance >= total_value) break;
+                        }
+                    }
+                    if (total_value > total_balance)
+                        throw new BalanceError.NOT_ENOUGH_BALANCE("Not enough balance");
+                    add_remainder_inputs = confirmed_inputs;
+                }
+                else
+                {
+                    var options_gi = new OptionsGetInputs();
+                    options_gi.threshold = total_value;
+                    options_gi.security = security;
+                    var inputs = yield get_inputs(seed, options_gi);
+                    add_remainder_inputs = inputs.inputs;
+                }
+            }
+            else
+            {
+                bundle.finalize();
+                bundle.add_trytes(signature_fragments);
+                var bundle_trytes = new ArrayList<string>();
+                foreach (var tx in bundle.bundle)
+                    bundle_trytes.insert(0, Utils.transaction_trytes(tx));
+                return bundle_trytes;
+            }
+
+            // addRemainder(add_remainder_inputs)
+
+            var total_transfer_value = total_value;
+            for (int i = 0; i < add_remainder_inputs.size; i++)
+            {
+                var this_balance = add_remainder_inputs[i].balance;
+                var to_subtract = -this_balance;
+                int timestamp = (int)(time_t(null)); // timestamp in seconds
+                bundle.add_entry(add_remainder_inputs[i].security,
+                                 add_remainder_inputs[i].address,
+                                 to_subtract,
+                                 tag,
+                                 timestamp);
+                if (this_balance >= total_transfer_value)
+                {
+                    var remainder = this_balance - total_transfer_value;
+                    if (remainder > 0)
+                    {
+                        if (remainder_address != null)
+                        {
+                            bundle.add_entry(1,
+                                             remainder_address,
+                                             remainder,
+                                             tag,
+                                             timestamp);
+                        }
+                        else
+                        {
+                            var options_gna = new OptionsGetNewAddress();
+                            options_gna.security = security;
+                            var address_a = yield get_new_address(seed, options_gna);
+                            timestamp = (int)(time_t(null));
+                            bundle.add_entry(1,
+                                             address_a[0],
+                                             remainder,
+                                             tag,
+                                             timestamp);
+                        }
+                    }
+                }
+                else
+                {
+                    total_transfer_value -= this_balance;
+                }
+            }
+
+            // signInputsAndReturn
+
+            bundle.finalize();
+
+            // Here actually sign
+            // TODO
+
+            bundle.add_trytes(signature_fragments);
+            var bundle_trytes = new ArrayList<string>();
+            foreach (var tx in bundle.bundle)
+                bundle_trytes.insert(0, Utils.transaction_trytes(tx));
+            return bundle_trytes;
         }
 
         public async Gee.List<Transaction>

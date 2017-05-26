@@ -15,12 +15,16 @@ namespace IotaLibVala
             }
         }
 
-        public void add_entry()
+        public void add_entry(int signature_message_length,
+                              string address,
+                              int64 @value,
+                              string tag,
+                              int timestamp)
         {
             error("not yet implemented");
         }
 
-        public void add_trytes()
+        public void add_trytes(Gee.List<string> signature_fragments)
         {
             error("not yet implemented");
         }
