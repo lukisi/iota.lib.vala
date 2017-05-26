@@ -104,40 +104,40 @@ namespace IotaLibVala.ApiCommand
         return json_string_object(ret);
     }
 
-    public class CommandBroadcastTransaction : Command
+    public class CommandBroadcastTransactions : Command
     {
         public string[] trytes {get; set;}
-        public CommandBroadcastTransaction()
+        public CommandBroadcastTransactions()
         {
-            this.command = "broadcastTransaction";
+            this.command = "broadcastTransactions";
         }
     }
 
     public string
-    broadcast_transaction
+    broadcast_transactions
     (Gee.List<string> trytes)
     {
-        var ret = new CommandBroadcastTransaction();
+        var ret = new CommandBroadcastTransactions();
         string[] _trytes = new string[trytes.size];
         for (int j = 0; j < trytes.size; j++) _trytes[j] = trytes[j];
         ret.trytes = _trytes;
         return json_string_object(ret);
     }
 
-    public class CommandStoreTransaction : Command
+    public class CommandStoreTransactions : Command
     {
         public string[] trytes {get; set;}
-        public CommandStoreTransaction()
+        public CommandStoreTransactions()
         {
-            this.command = "storeTransaction";
+            this.command = "storeTransactions";
         }
     }
 
     public string
-    store_transaction
+    store_transactions
     (Gee.List<string> trytes)
     {
-        var ret = new CommandStoreTransaction();
+        var ret = new CommandStoreTransactions();
         string[] _trytes = new string[trytes.size];
         for (int j = 0; j < trytes.size; j++) _trytes[j] = trytes[j];
         ret.trytes = _trytes;

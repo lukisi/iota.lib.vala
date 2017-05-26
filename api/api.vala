@@ -226,8 +226,7 @@ namespace IotaLibVala
             }
         }
 
-        /*
-         *   Gets the inputs of a seed
+        /* Gets the inputs of a seed
          */
         public async GetInputsResponse
         get_inputs(string seed, OptionsGetInputs options)
@@ -351,7 +350,7 @@ namespace IotaLibVala
             if (! InputValidator.is_trytes(seed)) throw new InputError.INVALID_SEED("Invalid seed");
             if (! InputValidator.is_inputs(options.inputs)) throw new InputError.INVALID_INPUTS("Invalid inputs");
 
-            foreach (var this_transfer in transfers)
+            // foreach (var this_transfer in transfers)
             {
                 // If message or tag is not supplied, provide it
                 // Also remove the checksum of the address if it's there after validating it
@@ -543,12 +542,16 @@ namespace IotaLibVala
             return bundle_trytes;
         }
 
+        /* Gets transactions to approve, attaches to Tangle, broadcasts and stores
+         */
         public async Gee.List<Transaction>
         send_trytes
         (Gee.List<string> trytes, int depth, int min_weight_magnitude)
         throws InputError, RequestError
         {
+            // Get branch and trunk
             var to_approve = yield get_transactions_to_approve(depth);
+            // attach to tangle - do pow
             var attached = yield attach_to_tangle(to_approve.trunk_transaction,
                                                   to_approve.branch_transaction,
                                                   min_weight_magnitude,
@@ -557,6 +560,7 @@ namespace IotaLibVala
             {
                 error("sandbox not implemented");
             }
+            // Broadcast and store tx
             yield broadcast_and_store(attached);
             var ret = new ArrayList<Transaction>();
             foreach (string attached_trytes in attached)
@@ -564,6 +568,8 @@ namespace IotaLibVala
             return ret;
         }
 
+        /* Call API getTransactionsToApprove
+         */
         public async ApiResults.GetTransactionsToApproveResponse
         get_transactions_to_approve(int depth) throws RequestError
         {
@@ -573,6 +579,8 @@ namespace IotaLibVala
             return ret;
         }
 
+        /* Call API attachToTangle
+         */
         public async Gee.List<string>
         attach_to_tangle
         (string trunk_transaction,
@@ -600,30 +608,30 @@ namespace IotaLibVala
         }
 
         public async void
-        broadcast_transaction(Gee.List<string> trytes) throws RequestError
+        broadcast_transactions(Gee.List<string> trytes) throws RequestError
         {
             // TODO check inputValidator.isArrayOfAttachedTrytes(trytes)
-            var json_command = ApiCommand.broadcast_transaction(trytes);
+            var json_command = ApiCommand.broadcast_transactions(trytes);
             string json_result = yield send_command(json_command);
-            ApiResults.broadcast_transaction(json_result);
+            ApiResults.broadcast_transactions(json_result);
             // void
         }
 
         public async void
-        store_transaction(Gee.List<string> trytes) throws RequestError
+        store_transactions(Gee.List<string> trytes) throws RequestError
         {
             // TODO check inputValidator.isArrayOfAttachedTrytes(trytes)
-            var json_command = ApiCommand.store_transaction(trytes);
+            var json_command = ApiCommand.store_transactions(trytes);
             string json_result = yield send_command(json_command);
-            ApiResults.store_transaction(json_result);
+            ApiResults.store_transactions(json_result);
             // void
         }
 
         public async void
         broadcast_and_store(Gee.List<string> trytes) throws RequestError
         {
-            yield broadcast_transaction(trytes);
-            yield store_transaction(trytes);
+            yield broadcast_transactions(trytes);
+            yield store_transactions(trytes);
         }
     }
 }

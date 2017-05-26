@@ -162,7 +162,7 @@ namespace IotaLibVala.ApiResults
     }
 
     public void
-    broadcast_transaction(string json_result)
+    broadcast_transactions(string json_result)
     throws RequestError
     {
         Json.Parser p_res = new Json.Parser();
@@ -178,7 +178,7 @@ namespace IotaLibVala.ApiResults
     }
 
     public void
-    store_transaction(string json_result)
+    store_transactions(string json_result)
     throws RequestError
     {
         Json.Parser p_res = new Json.Parser();
