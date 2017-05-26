@@ -19,6 +19,8 @@ namespace IotaLibVala.ApiResults
         public string branch_transaction;
     }
 
+    /* Read JSON result for API findTransactions
+     */
     public Gee.List<string>
     find_transactions_for_address(string json_result)
     throws RequestError
@@ -50,6 +52,8 @@ namespace IotaLibVala.ApiResults
         return ret;
     }
 
+    /* Read JSON result for API getBalances
+     */
     public GetBalancesResponse
     get_balances(string json_result)
     throws RequestError
@@ -99,6 +103,8 @@ namespace IotaLibVala.ApiResults
         return ret;
     }
 
+    /* Read JSON result for API getTransactionsToApprove
+     */
     public GetTransactionsToApproveResponse
     get_transactions_to_approve(string json_result)
     throws RequestError
@@ -130,6 +136,8 @@ namespace IotaLibVala.ApiResults
         return ret;
     }
 
+    /* Read JSON result for API attachToTangle
+     */
     public Gee.List<string>
     attach_to_tangle(string json_result)
     throws RequestError
@@ -161,6 +169,8 @@ namespace IotaLibVala.ApiResults
         return ret;
     }
 
+    /* Read JSON result for API broadcastTransactions
+     */
     public void
     broadcast_transactions(string json_result)
     throws RequestError
@@ -177,6 +187,8 @@ namespace IotaLibVala.ApiResults
         // void
     }
 
+    /* Read JSON result for API storeTransactions
+     */
     public void
     store_transactions(string json_result)
     throws RequestError

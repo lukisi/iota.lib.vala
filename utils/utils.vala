@@ -2,9 +2,12 @@ using Gee;
 
 namespace IotaLibVala.Utils
 {
+    /* Generates the 9-tryte checksum of an address
+     */
     public string add_checksum(string address)
+    throws InputError
     {
-        assert(address.length == 81);
+        if (address.length != 81) throw new InputError.INVALID_INPUTS("address.length != 81");
         Converter c = Converter.singleton;
         var curl = new Curl();
         curl.init();
@@ -14,17 +17,21 @@ namespace IotaLibVala.Utils
         return address + checksum;
     }
 
+    /* Converts transaction trytes of 2673 trytes into a transaction object
+     */
     public Transaction transaction_object(string trytes)
+    throws InputError
     {
-        assert(trytes.length == 2673);
+        if (trytes.length != 2673) throw new InputError.INVALID_INPUTS("trytes.length != 2673");
         // validity check
         for (var i = 2279; i < 2295; i++) if (trytes.@get(i) != '9')
-            error(@"expected 9 at pos $(i)");
+            throw new InputError.INVALID_INPUTS(@"expected 9 at pos $(i)");
 
         Converter c = Converter.singleton;
         Gee.List<int64?> transaction_trits = c.trits_from_trytes(trytes);
         Gee.List<int64?> hash;
 
+        // generate the correct transaction hash
         var curl = new Curl();
         curl.init();
         curl.absorb(transaction_trits);
@@ -47,6 +54,8 @@ namespace IotaLibVala.Utils
         return ret;
     }
 
+    /* Converts a transaction object into trytes
+     */
     public string transaction_trytes(Transaction transaction)
     {
         Converter c = Converter.singleton;

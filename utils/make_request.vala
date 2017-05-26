@@ -54,6 +54,8 @@ namespace IotaLibVala
             return new Request(provider);
         }
 
+        /* sends an http request to a specified host
+         */
         public async string send(string json_command) throws RequestError
         {
             var request = open();

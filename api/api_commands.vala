@@ -16,6 +16,8 @@ namespace IotaLibVala.ApiCommand
         public string command {get; set;}
     }
 
+    /* Prepare JSON for API getNodeInfo
+     */
     public string get_node_info()
     {
         var ret = new Command();
@@ -23,6 +25,8 @@ namespace IotaLibVala.ApiCommand
         return json_string_object(ret);
     }
 
+    /* Prepare JSON for API findTransactions
+     */
     public class CommandFindTransactionsForAddress : Command
     {
         public string[] addresses {get; set;}
@@ -39,6 +43,8 @@ namespace IotaLibVala.ApiCommand
         return json_string_object(ret);
     }
 
+    /* Prepare JSON for API getBalances
+     */
     public class CommandGetBalances : Command
     {
         public string[] addresses {get; set;}
@@ -59,6 +65,8 @@ namespace IotaLibVala.ApiCommand
         return json_string_object(ret);
     }
 
+    /* Prepare JSON for API getTransactionsToApprove
+     */
     public class CommandGetTransactionsToApprove : Command
     {
         public int depth {get; set;}
@@ -75,6 +83,8 @@ namespace IotaLibVala.ApiCommand
         return json_string_object(ret);
     }
 
+    /* Prepare JSON for API attachToTangle
+     */
     public class CommandAttachToTangle : Command
     {
         public string trunkTransaction {get; set;}
@@ -104,6 +114,8 @@ namespace IotaLibVala.ApiCommand
         return json_string_object(ret);
     }
 
+    /* Prepare JSON for API broadcastTransactions
+     */
     public class CommandBroadcastTransactions : Command
     {
         public string[] trytes {get; set;}
@@ -124,6 +136,8 @@ namespace IotaLibVala.ApiCommand
         return json_string_object(ret);
     }
 
+    /* Prepare JSON for API storeTransactions
+     */
     public class CommandStoreTransactions : Command
     {
         public string[] trytes {get; set;}

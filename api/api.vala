@@ -8,6 +8,9 @@ namespace IotaLibVala
         GENERIC_ERROR
     }
 
+    /* Class for objects that represent a transaction.
+     * See function Utils.transaction_object.
+     */
     public class Transaction : Object
     {
         public string hash {get; set;}
@@ -155,7 +158,9 @@ namespace IotaLibVala
             var address = c.trytes(address_trits);
 
             if (checksum) {
-                address = Utils.add_checksum(address);
+                try {
+                    address = Utils.add_checksum(address);
+                } catch (InputError e) {assert_not_reached();}
             }
 
             return address;
@@ -341,8 +346,7 @@ namespace IotaLibVala
          */
         public async Gee.List<string>
         prepare_transfers
-        (
-         string seed,
+        (string seed,
          Gee.List<TransferToSend> transfers,
          SendTransferOptions options)
         throws InputError, RequestError, BalanceError
@@ -584,9 +588,9 @@ namespace IotaLibVala
         public async Gee.List<string>
         attach_to_tangle
         (string trunk_transaction,
-        string branch_transaction,
-        int min_weight_magnitude,
-        Gee.List<string> trytes)
+         string branch_transaction,
+         int min_weight_magnitude,
+         Gee.List<string> trytes)
         throws InputError, RequestError
         {
             if (! InputValidator.is_hash(trunk_transaction))
@@ -607,6 +611,8 @@ namespace IotaLibVala
             return ret;
         }
 
+        /* Call API broadcastTransactions
+         */
         public async void
         broadcast_transactions(Gee.List<string> trytes) throws RequestError
         {
@@ -617,6 +623,8 @@ namespace IotaLibVala
             // void
         }
 
+        /* Call API storeTransactions
+         */
         public async void
         store_transactions(Gee.List<string> trytes) throws RequestError
         {
@@ -627,6 +635,8 @@ namespace IotaLibVala
             // void
         }
 
+        /* Broadcasts and stores transaction trytes
+         */
         public async void
         broadcast_and_store(Gee.List<string> trytes) throws RequestError
         {
