@@ -24,6 +24,8 @@ namespace IotaLibVala
         public string nonce {get; set;}
     }
 
+    /* Making API requests, including generalized wrapper functions
+     */
     public class Api : Object
     {
         public MakeRequest make_request {get; set;}
@@ -35,17 +37,24 @@ namespace IotaLibVala
             this.sandbox = sandbox;
         }
 
+        /* General function that makes an HTTP request to the local node
+         */
         public async string send_command(string json_command) throws RequestError
         {
             return yield make_request.send(json_command);
         }
 
+        /* Call API getNodeInfo
+         */
         public async string get_node_info() throws RequestError
         {
             var json_command = ApiCommand.get_node_info();
             return yield send_command(json_command);
         }
 
+        /* Call API findTransactions for the particular case where the only search
+         * value is an array with 1 address.
+         */
         public async Gee.List<string> find_transactions_for_address(string address) throws RequestError
         {
             var json_command = ApiCommand.find_transactions_for_address(address);
@@ -54,8 +63,17 @@ namespace IotaLibVala
             return ret;
         }
 
+        /* Used for parameter `options` in function `get_new_address`.
+         */
         public class OptionsGetNewAddress : Object
         {
+            /*
+             *  index         Key index to start search from
+             *  checksum      add 9-tryte checksum
+             *  total         Total number of addresses to return
+             *  security      Security level to be used for the private key / address. Can be 1, 2 or 3
+             *  return_all    return all searched addresses
+             */
             public int index;
             public int? total;
             public int security;
@@ -71,6 +89,9 @@ namespace IotaLibVala
             }
         }
 
+        /*
+         * Generates a new address either deterministically or index-based
+         */
         public async Gee.List<string>
         get_new_address(string seed, OptionsGetNewAddress options)
         throws RequestError
@@ -80,14 +101,23 @@ namespace IotaLibVala
 
             ArrayList<string> ret = new ArrayList<string>();
 
+            // Case 1: total
+            //
+            // If total number of addresses to generate is supplied, simply generate
+            // and return the list of all addresses
             if (options.total != null)
             {
+                // Increase index with each iteration
                 for (var i = 0; i < options.total; i++, index++) {
                     ret.add(make_new_address(seed, index, options.security, options.checksum));
                 }
                 return ret;
             }
 
+            //  Case 2: no total provided
+            //
+            //  Continue calling findTransactions to see if address was already created
+            //  if null, return list of addresses
             string new_address;
             while (true)
             {
@@ -97,11 +127,23 @@ namespace IotaLibVala
                 index++;
                 if (transactions.size == 0) break;
             }
+            // If returnAll, return list of allAddresses
+            // else return the last address that was generated
             if (!options.return_all) ret.add(new_address);
 
             return ret;
         }
 
+        /**
+        *   Generates a new address
+        *
+        *   @method     make_new_address
+        *   @param      {string} seed
+        *   @param      {int} index
+        *   @param      {int} security      Security level of the private key
+        *   @param      {bool} checksum
+        *   @returns    {string} address
+        **/
         private string make_new_address(string seed, int index, int security, bool checksum)
         {
             Converter c = Converter.singleton;
@@ -119,6 +161,8 @@ namespace IotaLibVala
             return address;
         }
 
+        /* Call API getBalances
+         */
         public async ApiResults.GetBalancesResponse
         get_balances(Gee.List<string> addresses, int threshold) throws RequestError
         {
@@ -129,8 +173,16 @@ namespace IotaLibVala
             return ret;
         }
 
+        /* Used for parameter `options` in function `get_inputs`
+         */
         public class OptionsGetInputs : Object
         {
+            /*
+             * start       Starting key index
+             * end         Ending key index
+             * threshold   Min balance required
+             * security    secuirty level of private key / seed
+             */
             public int start;
             public int end;
             public int64 threshold;
@@ -174,6 +226,9 @@ namespace IotaLibVala
             }
         }
 
+        /*
+         *   Gets the inputs of a seed
+         */
         public async GetInputsResponse
         get_inputs(string seed, OptionsGetInputs options)
         throws RequestError, BalanceError
@@ -181,12 +236,18 @@ namespace IotaLibVala
             // TODO validate seed
 
             // TODO validate start + end
+            // If start value bigger than end, return error
+            // or if difference between end and start is bigger than 500 keys
 
             var start = options.start;
             var end = options.end;
             var threshold = options.threshold;
             var security = options.security;
             Gee.List<string> addresses;
+
+            //  Case 1: start and end
+            //
+            //  If start and end is defined by the user, simply iterate through the keys
             if (end != 0)
             {
                 addresses = new ArrayList<string>();
@@ -195,6 +256,10 @@ namespace IotaLibVala
                     addresses.add(make_new_address(seed, i, security, false));
                 }
             }
+            //  Case 2: iterate till threshold || end
+            //
+            //  Either start from index: 0 or start (if defined) until threshold is reached.
+            //  Calls get_new_address and deterministically generates and returns all addresses
             else
             {
                 OptionsGetNewAddress options_gna = new OptionsGetNewAddress();
@@ -207,8 +272,12 @@ namespace IotaLibVala
             // getBalancesAndFormat addresses:
             var balances = yield get_balances(addresses, 100);
             var inputs_object = new GetInputsResponse();
+
+            // If threshold defined, keep track of whether reached or not
+            // else set default to true
             var threshold_reached = true;
             if (threshold != 0) threshold_reached = false;
+
             for (int i = 0; i < addresses.size; i++)
             {
                 int64 balance = balances.balances[i];
@@ -236,8 +305,15 @@ namespace IotaLibVala
             public int64 @value;
         }
 
+        /* Used for parameter `options` in function `send_transfer`
+         */
         public class SendTransferOptions : Object
         {
+            /*
+             * inputs      Inputs used for signing. Needs to have correct security, keyIndex and address value
+             * address     Remainder address
+             * security    security level to be used for getting inputs and addresses
+             */
             public string? address;
             public Gee.List<GetInputsInputValue> inputs;
             public int security;
@@ -261,6 +337,9 @@ namespace IotaLibVala
             return yield send_trytes(trytes, depth, min_weight_magnitude);
         }
 
+        /* Prepares transfer by generating bundle, finding and signing inputs
+         * Returns an array of bundle trytes
+         */
         public async Gee.List<string>
         prepare_transfers
         (
@@ -272,7 +351,12 @@ namespace IotaLibVala
             if (! InputValidator.is_trytes(seed)) throw new InputError.INVALID_SEED("Invalid seed");
             if (! InputValidator.is_inputs(options.inputs)) throw new InputError.INVALID_INPUTS("Invalid inputs");
 
-            // TODO validate transfers
+            foreach (var this_transfer in transfers)
+            {
+                // If message or tag is not supplied, provide it
+                // Also remove the checksum of the address if it's there after validating it
+                // TODO validate transfers
+            }
 
             string? remainder_address = options.address;
             int security = options.security;
