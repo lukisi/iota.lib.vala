@@ -361,28 +361,38 @@ namespace IotaLibVala
             string? remainder_address = options.address;
             int security = options.security;
 
+            // Create a new bundle
             var bundle = new Bundle();
             int64 total_value = 0;
             string tag = "";
             Gee.List<string> signature_fragments = new ArrayList<string>();
 
+            //
+            //  Iterate over all transfers, get totalValue
+            //  and prepare the signatureFragments, message and tag
+            //
             for (int i = 0; i < transfers.size; i++)
             {
                 var signature_message_length = 1;
+                // If message longer than 2187 trytes, increase signatureMessageLength (add 2nd transaction)
                 if (transfers[i].message.length > 2187)
                 {
+                    // Get total length, message / maxLength (2187 trytes)
                     signature_message_length += transfers[i].message.length / 2187;
                     var msg_copy = transfers[i].message;
+                    // While there is still a message, copy it
                     while (msg_copy.length > 0)
                     {
                         var fragment = msg_copy.slice(0, 2187);
                         msg_copy = msg_copy.slice(2187, msg_copy.length);
+                        // Pad remainder of fragment
                         while (fragment.length < 2187) fragment += "9";
                         signature_fragments.add(fragment);
                     }
                 }
                 else
                 {
+                    // Else, get single fragment with 2187 of 9's trytes
                     var fragment = "";
                     if (transfers[i].message.length > 0)
                         fragment = transfers[i].message.slice(0, 2187);
@@ -392,7 +402,9 @@ namespace IotaLibVala
                 int timestamp = (int)(time_t(null)); // timestamp in seconds
                 tag = transfers[i].tag;
                 if (tag == "") tag = "999999999999999999999999999";
+                // Pad for required 27 tryte length
                 while (tag.length < 27) tag += "9";
+                // Add first entries to the bundle
                 bundle.add_entry(signature_message_length,
                                  transfers[i].address,
                                  transfers[i].@value,
@@ -402,10 +414,15 @@ namespace IotaLibVala
             }
 
             Gee.List<GetInputsInputValue> add_remainder_inputs;
+            // Get inputs if we are sending tokens
             if (total_value > 0)
             {
+                //  Case 1: user provided inputs
+                //
+                //  Validate the inputs by calling getBalances
                 if (! options.inputs.is_empty)
                 {
+                    // Get list of addresses of the provided inputs
                     var inputs_addresses = new ArrayList<string>();
                     foreach (var el in options.inputs) inputs_addresses.add(el.address);
                     var balances = yield get_balances(inputs_addresses, 100);
@@ -414,12 +431,14 @@ namespace IotaLibVala
                     for (int i = 0; i < balances.balances.size; i++)
                     {
                         var this_balance = balances.balances[i];
+                        // If input has balance, add it to confirmedInputs
                         if (this_balance > 0)
                         {
                             total_balance += this_balance;
                             var el = options.inputs[i];
                             el.balance = this_balance;
                             confirmed_inputs.add(el);
+                            // if we've already reached the intended input value, break out of loop
                             if (total_balance >= total_value) break;
                         }
                     }
@@ -427,17 +446,23 @@ namespace IotaLibVala
                         throw new BalanceError.NOT_ENOUGH_BALANCE("Not enough balance");
                     add_remainder_inputs = confirmed_inputs;
                 }
+                //  Case 2: Get inputs deterministically
+                //
+                //  If no inputs provided, derive the addresses from the seed and
+                //  confirm that the inputs exceed the threshold
                 else
                 {
                     var options_gi = new OptionsGetInputs();
                     options_gi.threshold = total_value;
                     options_gi.security = security;
+                    // If inputs have not enough balance this will throw error
                     var inputs = yield get_inputs(seed, options_gi);
                     add_remainder_inputs = inputs.inputs;
                 }
             }
             else
             {
+                // If no input required, don't sign and simply finalize the bundle
                 bundle.finalize();
                 bundle.add_trytes(signature_fragments);
                 var bundle_trytes = new ArrayList<string>();
@@ -454,18 +479,24 @@ namespace IotaLibVala
                 var this_balance = add_remainder_inputs[i].balance;
                 var to_subtract = -this_balance;
                 int timestamp = (int)(time_t(null)); // timestamp in seconds
+                // Add input as bundle entry
                 bundle.add_entry(add_remainder_inputs[i].security,
                                  add_remainder_inputs[i].address,
                                  to_subtract,
                                  tag,
                                  timestamp);
+                // If there is a remainder value
+                // Add extra output to send remaining funds to
                 if (this_balance >= total_transfer_value)
                 {
                     var remainder = this_balance - total_transfer_value;
                     if (remainder > 0)
                     {
+                        // If user has provided remainder address
+                        // Use it to send remaining funds to
                         if (remainder_address != null)
                         {
+                            // Remainder bundle entry
                             bundle.add_entry(1,
                                              remainder_address,
                                              remainder,
@@ -474,10 +505,12 @@ namespace IotaLibVala
                         }
                         else
                         {
+                            // Generate a new Address by calling getNewAddress
                             var options_gna = new OptionsGetNewAddress();
                             options_gna.security = security;
                             var address_a = yield get_new_address(seed, options_gna);
                             timestamp = (int)(time_t(null));
+                            // Remainder bundle entry
                             bundle.add_entry(1,
                                              address_a[0],
                                              remainder,
@@ -485,9 +518,13 @@ namespace IotaLibVala
                                              timestamp);
                         }
                     }
+                    // If there is no remainder, do not add transaction to bundle
+                    // simply sign and return
                 }
                 else
                 {
+                    // If multiple inputs provided, subtract the totalTransferValue by
+                    // the inputs balance
                     total_transfer_value -= this_balance;
                 }
             }
