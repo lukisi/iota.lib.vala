@@ -581,7 +581,7 @@ namespace IotaLibVala
             else
             {
                 // If no input required, don't sign and simply finalize the bundle
-                bundle.finalize();
+                bundle.finalize_bundle();
                 bundle.add_trytes(signature_fragments);
                 var bundle_trytes = new ArrayList<string>();
                 foreach (var tx in bundle.bundle)
@@ -649,7 +649,7 @@ namespace IotaLibVala
 
             // signInputsAndReturn
 
-            bundle.finalize();
+            bundle.finalize_bundle();
 
             // Here actually sign
             // TODO
