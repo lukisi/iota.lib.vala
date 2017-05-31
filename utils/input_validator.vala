@@ -71,7 +71,7 @@ namespace IotaLibVala.InputValidator
         return true;
     }
 
-    public bool is_inputs(Gee.List<Api.GetInputsInputValue> inputs)
+    public bool is_inputs(Gee.List<Api.TransferInputValue> inputs)
     {
         warning("InputValidator.is_inputs not yet implemented.");
         // TODO

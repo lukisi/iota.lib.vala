@@ -149,6 +149,28 @@ namespace IotaLibVala
 
         **************************************/
 
+        /* Used as part of parameter `options` in function `send_transfer`.
+         * Used as part of return value of function `get_inputs`.
+         */
+        public class TransferInputValue : Object
+        {
+            public string address;
+            public int64 balance;
+            public int key_index;
+            public int? security;
+            public TransferInputValue
+            (string address,
+             int64 balance,
+             int key_index,
+             int? security)
+            {
+                this.address = address;
+                this.balance = balance;
+                this.key_index = key_index;
+                this.security = security;
+            }
+        }
+
         /* Broadcasts and stores transaction trytes
          */
         public async void
@@ -204,13 +226,13 @@ namespace IotaLibVala
              * security    security level to be used for getting inputs and addresses
              */
             public string? address;
-            public Gee.List<GetInputsInputValue> inputs;
+            public Gee.List<TransferInputValue> inputs;
             public int security;
             public SendTransferOptions()
             {
                 address = null;
                 security = 2;
-                inputs = new ArrayList<GetInputsInputValue>();
+                inputs = new ArrayList<TransferInputValue>();
             }
         }
 
@@ -352,36 +374,15 @@ namespace IotaLibVala
             }
         }
 
-        /* Used as part of return value of function `get_inputs`
-         */
-        public class GetInputsInputValue : Object
-        {
-            public string address;
-            public int64 balance;
-            public int key_index;
-            public int security;
-            public GetInputsInputValue
-            (string address,
-             int64 balance,
-             int key_index,
-             int security)
-            {
-                this.address = address;
-                this.balance = balance;
-                this.key_index = key_index;
-                this.security = security;
-            }
-        }
-
         /* Used for return value of function `get_inputs`
          */
         public class GetInputsResponse : Object
         {
-            public Gee.List<GetInputsInputValue> inputs;
+            public Gee.List<TransferInputValue> inputs;
             public int64 total_balance;
             public GetInputsResponse()
             {
-                inputs = new ArrayList<GetInputsInputValue>();
+                inputs = new ArrayList<TransferInputValue>();
                 total_balance = 0;
             }
         }
@@ -442,7 +443,7 @@ namespace IotaLibVala
                 int64 balance = balances.balances[i];
                 if (balance > 0)
                 {
-                    inputs_object.inputs.add(new GetInputsInputValue(addresses[i], balance, start + i, security));
+                    inputs_object.inputs.add(new TransferInputValue(addresses[i], balance, start + i, security));
                     inputs_object.total_balance += balance;
                     if (threshold != 0 && inputs_object.total_balance >= threshold)
                     {
@@ -531,7 +532,7 @@ namespace IotaLibVala
                 total_value += transfers[i].@value;
             }
 
-            Gee.List<GetInputsInputValue> add_remainder_inputs;
+            Gee.List<TransferInputValue> add_remainder_inputs;
             // Get inputs if we are sending tokens
             if (total_value > 0)
             {
@@ -544,7 +545,7 @@ namespace IotaLibVala
                     var inputs_addresses = new ArrayList<string>();
                     foreach (var el in options.inputs) inputs_addresses.add(el.address);
                     var balances = yield get_balances(inputs_addresses, 100);
-                    var confirmed_inputs = new ArrayList<GetInputsInputValue>();
+                    var confirmed_inputs = new ArrayList<TransferInputValue>();
                     int64 total_balance = 0;
                     for (int i = 0; i < balances.balances.size; i++)
                     {
@@ -650,11 +651,59 @@ namespace IotaLibVala
             // signInputsAndReturn
 
             bundle.finalize_bundle();
-
-            // Here actually sign
-            // TODO
-
             bundle.add_trytes(signature_fragments);
+
+            //  SIGNING OF INPUTS
+            //
+            //  Here we do the actual signing of the inputs
+            //  Iterate over all bundle transactions, find the inputs
+            //  Get the corresponding private key and calculate the signatureFragment
+            Signing s = Signing.singleton;
+            Converter c = Converter.singleton;
+            for (var i = 0; i < bundle.bundle.size; i++) {
+
+                if (bundle.bundle[i].@value < 0) {
+                    var this_address = bundle.bundle[i].address;
+
+                    // Get the corresponding keyIndex and security of the address
+                    int key_index = -1;
+                    int key_security = -1;
+                    foreach (TransferInputValue input in options.inputs) {
+                        if (input.address == this_address) {
+
+                            key_index = input.key_index;
+                            key_security = input.security != null ? input.security : security;
+                            break;
+                        }
+                    }
+
+                    var bundle_hash = bundle.bundle[i].bundle;
+
+                    // Get corresponding private key of address
+                    var key = s.key(c.trits_from_trytes(seed), key_index, key_security);
+
+                    //  Get the normalized bundle hash
+                    var normalized_bundle_hash = bundle.normalized_bundle(bundle_hash);
+                    var normalized_bundle_fragments = new ArrayList<Gee.List<int64?>>();
+
+                    // Split hash into 3 fragments
+                    for (var l = 0; l < 3; l++) {
+                        normalized_bundle_fragments.add(normalized_bundle_hash.slice(l * 27, (l + 1) * 27));
+                    }
+
+                    //  First 6561 trits for the firstFragment
+                    var first_fragment = key.slice(0, 6561);
+
+                    //  First bundle fragment uses the first 27 trytes
+                    var first_bundle_fragment = normalized_bundle_fragments[0];
+
+                    //  Calculate the new signatureFragment with the first bundle fragment
+                    var first_signed_fragment = s.signature_fragment(first_bundle_fragment, first_fragment);
+
+                    // TODO complete
+                }
+            }
+
             var bundle_trytes = new ArrayList<string>();
             foreach (var tx in bundle.bundle)
                 bundle_trytes.insert(0, Utils.transaction_trytes(tx));

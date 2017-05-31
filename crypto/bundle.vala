@@ -108,7 +108,40 @@ namespace IotaLibVala
 
         public Gee.List<int64?> normalized_bundle(string bundle_hash)
         {
-            error("not yet implemented");
+            var ret = new ArrayList<int64?>();
+            Converter c = Converter.singleton;
+
+            for (var i = 0; i < 3; i++) {
+
+                int64 sum = 0;
+                for (var j = 0; j < 27; j++) {
+                    int64 v = c.@value(c.trits_from_trytes(bundle_hash.substring(i * 27 + j, 1)));
+                    ret.add(v);
+                    sum += v;
+                }
+
+                if (sum >= 0) {
+                    while (sum-- > 0) {
+                        for (var j = 0; j < 27; j++) {
+                            if (ret[i * 27 + j] > -13) {
+                                ret[i * 27 + j] = ret[i * 27 + j] - 1;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    while (sum++ < 0) {
+                        for (var j = 0; j < 27; j++) {
+                            if (ret[i * 27 + j] < 13) {
+                                ret[i * 27 + j] = ret[i * 27 + j] + 1;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return ret;
         }
     }
 }

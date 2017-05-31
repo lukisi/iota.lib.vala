@@ -91,5 +91,33 @@ namespace IotaLibVala
             curl.absorb(digests);
             return curl.squeeze();
         }
+
+        public Gee.List<int64?>
+        signature_fragment(Gee.List<int64?> normalized_bundle_fragment,
+                           Gee.List<int64?> key_fragment)
+        {
+            var ret = key_fragment.slice(0, key_fragment.size);
+
+            for (var i = 0; i < 27; i++) {
+                var hash = ret.slice(i * 243, (i + 1) * 243);
+
+                for (var j = 0; j < 13 - normalized_bundle_fragment[i]; j++) {
+                    var curl = new Curl();
+                    curl.init();
+                    curl.absorb(hash);
+                    hash = curl.squeeze();
+                }
+
+                for (var j = 0; j < 243; j++) {
+                    if (ret.size > i * 243 + j)
+                        ret[i * 243 + j] = hash[j];
+                    else if (ret.size == i * 243 + j)
+                        ret.add(hash[j]);
+                    else error("signature_fragment: unexpected size");
+                }
+            }
+
+            return ret;
+        }
     }
 }
