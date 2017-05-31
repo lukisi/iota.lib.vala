@@ -63,8 +63,8 @@ void test_2()
 
     iota.api.get_node_info.begin((obj, res) => {
         try {
-            string output = ((Api)obj).get_node_info.end(res);
-            print(@"nodeinfo: '$(output)'\n");
+            var result = ((Api)obj).get_node_info.end(res);
+            print(@"nodeinfo: '$(result.json_result)'\n");
         } catch (RequestError e) {
             warning(@"RequestError: $(e.message)");
         }

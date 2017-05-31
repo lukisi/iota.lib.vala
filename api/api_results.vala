@@ -2,7 +2,7 @@ using Gee;
 
 namespace IotaLibVala.ApiResults
 {
-    public class GetBalancesResponse
+    public class GetBalancesResponse : Object
     {
         public Gee.List<int64?> balances;
         public string milestone;
@@ -13,10 +13,15 @@ namespace IotaLibVala.ApiResults
         }
     }
 
-    public class GetTransactionsToApproveResponse
+    public class GetTransactionsToApproveResponse : Object
     {
         public string trunk_transaction;
         public string branch_transaction;
+    }
+
+    public class NodeInfo : Object
+    {
+        public string json_result;
     }
 
     /* Read JSON result for API findTransactions
@@ -203,5 +208,26 @@ namespace IotaLibVala.ApiResults
         Json.Reader r_res = new Json.Reader(res_rootnode);
         if (!r_res.is_object()) throw new RequestError.INVALID_RESPONSE("root must be an object");
         // void
+    }
+
+    /* Read JSON result for API getNodeInfo
+     */
+    public NodeInfo
+    get_node_info(string json_result)
+    throws RequestError
+    {
+        Json.Parser p_res = new Json.Parser();
+        try {
+            p_res.load_from_data(json_result);
+        } catch (Error e) {
+            throw new RequestError.INVALID_RESPONSE("response must be a JSON tree");
+        }
+        unowned Json.Node res_rootnode = p_res.get_root();
+        Json.Reader r_res = new Json.Reader(res_rootnode);
+        if (!r_res.is_object()) throw new RequestError.INVALID_RESPONSE("root must be an object");
+        // void
+        NodeInfo ret = new NodeInfo();
+        ret.json_result = json_result;
+        return ret;
     }
 }

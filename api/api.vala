@@ -47,12 +47,32 @@ namespace IotaLibVala
             return yield make_request.send(json_command);
         }
 
-        /* Call API getNodeInfo
+        /* Call API attachToTangle
          */
-        public async string get_node_info() throws RequestError
+        public async Gee.List<string>
+        attach_to_tangle
+        (string trunk_transaction,
+         string branch_transaction,
+         int min_weight_magnitude,
+         Gee.List<string> trytes)
+        throws InputError, RequestError
         {
-            var json_command = ApiCommand.get_node_info();
-            return yield send_command(json_command);
+            if (! InputValidator.is_hash(trunk_transaction))
+                throw new InputError.INVALID_TRUNK_OR_BRANCH(trunk_transaction);
+            if (! InputValidator.is_hash(branch_transaction))
+                throw new InputError.INVALID_TRUNK_OR_BRANCH(branch_transaction);
+            if (! InputValidator.is_value(min_weight_magnitude))
+                throw new InputError.NOT_INT("");
+            if (! InputValidator.is_array_of_trytes(trytes))
+                throw new InputError.INVALID_TRYTES("");
+
+            var json_command = ApiCommand.attach_to_tangle(trunk_transaction,
+                                                           branch_transaction,
+                                                           min_weight_magnitude,
+                                                           trytes);
+            string json_result = yield send_command(json_command);
+            Gee.List<string> ret = ApiResults.attach_to_tangle(json_result);
+            return ret;
         }
 
         /* Call API findTransactions for the particular case where the only search
@@ -64,6 +84,178 @@ namespace IotaLibVala
             string json_result = yield send_command(json_command);
             Gee.List<string> ret = ApiResults.find_transactions_for_address(json_result);
             return ret;
+        }
+
+        /* Call API getBalances
+         */
+        public async ApiResults.GetBalancesResponse
+        get_balances(Gee.List<string> addresses, int threshold) throws RequestError
+        {
+            // TODO check
+            var json_command = ApiCommand.get_balances(addresses, threshold);
+            string json_result = yield send_command(json_command);
+            ApiResults.GetBalancesResponse ret = ApiResults.get_balances(json_result);
+            return ret;
+        }
+
+        /* Call API getNodeInfo
+         */
+        public async ApiResults.NodeInfo get_node_info() throws RequestError
+        {
+            var json_command = ApiCommand.get_node_info();
+            string json_result = yield send_command(json_command);
+            ApiResults.NodeInfo ret = ApiResults.get_node_info(json_result);
+            return ret;
+        }
+
+        /* Call API getTransactionsToApprove
+         */
+        public async ApiResults.GetTransactionsToApproveResponse
+        get_transactions_to_approve(int depth) throws RequestError
+        {
+            var json_command = ApiCommand.get_transactions_to_approve(depth);
+            string json_result = yield send_command(json_command);
+            ApiResults.GetTransactionsToApproveResponse ret = ApiResults.get_transactions_to_approve(json_result);
+            return ret;
+        }
+
+        /* Call API broadcastTransactions
+         */
+        public async void
+        broadcast_transactions(Gee.List<string> trytes) throws RequestError
+        {
+            // TODO check inputValidator.isArrayOfAttachedTrytes(trytes)
+            var json_command = ApiCommand.broadcast_transactions(trytes);
+            string json_result = yield send_command(json_command);
+            ApiResults.broadcast_transactions(json_result);
+            // void
+        }
+
+        /* Call API storeTransactions
+         */
+        public async void
+        store_transactions(Gee.List<string> trytes) throws RequestError
+        {
+            // TODO check inputValidator.isArrayOfAttachedTrytes(trytes)
+            var json_command = ApiCommand.store_transactions(trytes);
+            string json_result = yield send_command(json_command);
+            ApiResults.store_transactions(json_result);
+            // void
+        }
+
+        /*************************************
+
+        WRAPPER AND CUSTOM  FUNCTIONS
+
+        **************************************/
+
+        /* Broadcasts and stores transaction trytes
+         */
+        public async void
+        broadcast_and_store(Gee.List<string> trytes) throws RequestError
+        {
+            yield broadcast_transactions(trytes);
+            yield store_transactions(trytes);
+        }
+
+        /* Gets transactions to approve, attaches to Tangle, broadcasts and stores
+         */
+        public async Gee.List<Transaction>
+        send_trytes
+        (Gee.List<string> trytes, int depth, int min_weight_magnitude)
+        throws InputError, RequestError
+        {
+            // Get branch and trunk
+            var to_approve = yield get_transactions_to_approve(depth);
+            // attach to tangle - do pow
+            var attached = yield attach_to_tangle(to_approve.trunk_transaction,
+                                                  to_approve.branch_transaction,
+                                                  min_weight_magnitude,
+                                                  trytes);
+            if (sandbox)
+            {
+                error("sandbox not implemented");
+            }
+            // Broadcast and store tx
+            yield broadcast_and_store(attached);
+            var ret = new ArrayList<Transaction>();
+            foreach (string attached_trytes in attached)
+                ret.add(Utils.transaction_object(attached_trytes));
+            return ret;
+        }
+
+        /* Used for parameter `transfers` in function `send_transfer`
+         */
+        public class TransferToSend : Object
+        {
+            public string tag;
+            public string message;
+            public string address;
+            public int64 @value;
+        }
+
+        /* Used for parameter `options` in function `send_transfer`
+         */
+        public class SendTransferOptions : Object
+        {
+            /*
+             * inputs      Inputs used for signing. Needs to have correct security, keyIndex and address value
+             * address     Remainder address
+             * security    security level to be used for getting inputs and addresses
+             */
+            public string? address;
+            public Gee.List<GetInputsInputValue> inputs;
+            public int security;
+            public SendTransferOptions()
+            {
+                address = null;
+                security = 2;
+                inputs = new ArrayList<GetInputsInputValue>();
+            }
+        }
+
+        /* Prepares Transfer, gets transactions to approve
+         *   attaches to Tangle, broadcasts and stores
+         */
+        public async Gee.List<Transaction>
+        send_transfer
+        (string seed, int depth, int min_weight_magnitude,
+         Gee.List<TransferToSend> transfers,
+         SendTransferOptions options)
+        throws InputError, RequestError, BalanceError
+        {
+            // TODO validate input
+            var trytes = yield prepare_transfers(seed, transfers, options);
+            return yield send_trytes(trytes, depth, min_weight_magnitude);
+        }
+
+        /**
+        *   Generates a new address
+        *
+        *   @method     make_new_address
+        *   @param      {string} seed
+        *   @param      {int} index
+        *   @param      {int} security      Security level of the private key
+        *   @param      {bool} checksum
+        *   @returns    {string} address
+        **/
+        private string make_new_address(string seed, int index, int security, bool checksum)
+        {
+            Converter c = Converter.singleton;
+            Gee.List<int64?> trits = c.trits_from_trytes(seed);
+            Signing s = Signing.singleton;
+            var key = s.key(trits, index, security);
+            var digests = s.digests(key);
+            var address_trits = s.address(digests);
+            var address = c.trytes(address_trits);
+
+            if (checksum) {
+                try {
+                    address = Utils.add_checksum(address);
+                } catch (InputError e) {assert_not_reached();}
+            }
+
+            return address;
         }
 
         /* Used for parameter `options` in function `get_new_address`.
@@ -137,47 +329,6 @@ namespace IotaLibVala
             return ret;
         }
 
-        /**
-        *   Generates a new address
-        *
-        *   @method     make_new_address
-        *   @param      {string} seed
-        *   @param      {int} index
-        *   @param      {int} security      Security level of the private key
-        *   @param      {bool} checksum
-        *   @returns    {string} address
-        **/
-        private string make_new_address(string seed, int index, int security, bool checksum)
-        {
-            Converter c = Converter.singleton;
-            Gee.List<int64?> trits = c.trits_from_trytes(seed);
-            Signing s = Signing.singleton;
-            var key = s.key(trits, index, security);
-            var digests = s.digests(key);
-            var address_trits = s.address(digests);
-            var address = c.trytes(address_trits);
-
-            if (checksum) {
-                try {
-                    address = Utils.add_checksum(address);
-                } catch (InputError e) {assert_not_reached();}
-            }
-
-            return address;
-        }
-
-        /* Call API getBalances
-         */
-        public async ApiResults.GetBalancesResponse
-        get_balances(Gee.List<string> addresses, int threshold) throws RequestError
-        {
-            // TODO check
-            var json_command = ApiCommand.get_balances(addresses, threshold);
-            string json_result = yield send_command(json_command);
-            ApiResults.GetBalancesResponse ret = ApiResults.get_balances(json_result);
-            return ret;
-        }
-
         /* Used for parameter `options` in function `get_inputs`
          */
         public class OptionsGetInputs : Object
@@ -201,6 +352,8 @@ namespace IotaLibVala
             }
         }
 
+        /* Used as part of return value of function `get_inputs`
+         */
         public class GetInputsInputValue : Object
         {
             public string address;
@@ -220,6 +373,8 @@ namespace IotaLibVala
             }
         }
 
+        /* Used for return value of function `get_inputs`
+         */
         public class GetInputsResponse : Object
         {
             public Gee.List<GetInputsInputValue> inputs;
@@ -299,46 +454,6 @@ namespace IotaLibVala
 
             if (! threshold_reached) throw new BalanceError.NOT_ENOUGH_BALANCE("Not enough balance");
             return inputs_object;
-        }
-
-        public class TransferToSend : Object
-        {
-            public string tag;
-            public string message;
-            public string address;
-            public int64 @value;
-        }
-
-        /* Used for parameter `options` in function `send_transfer`
-         */
-        public class SendTransferOptions : Object
-        {
-            /*
-             * inputs      Inputs used for signing. Needs to have correct security, keyIndex and address value
-             * address     Remainder address
-             * security    security level to be used for getting inputs and addresses
-             */
-            public string? address;
-            public Gee.List<GetInputsInputValue> inputs;
-            public int security;
-            public SendTransferOptions()
-            {
-                address = null;
-                security = 2;
-                inputs = new ArrayList<GetInputsInputValue>();
-            }
-        }
-
-        public async Gee.List<Transaction>
-        send_transfer
-        (string seed, int depth, int min_weight_magnitude,
-         Gee.List<TransferToSend> transfers,
-         SendTransferOptions options)
-        throws InputError, RequestError, BalanceError
-        {
-            // TODO validate input
-            var trytes = yield prepare_transfers(seed, transfers, options);
-            return yield send_trytes(trytes, depth, min_weight_magnitude);
         }
 
         /* Prepares transfer by generating bundle, finding and signing inputs
@@ -544,104 +659,6 @@ namespace IotaLibVala
             foreach (var tx in bundle.bundle)
                 bundle_trytes.insert(0, Utils.transaction_trytes(tx));
             return bundle_trytes;
-        }
-
-        /* Gets transactions to approve, attaches to Tangle, broadcasts and stores
-         */
-        public async Gee.List<Transaction>
-        send_trytes
-        (Gee.List<string> trytes, int depth, int min_weight_magnitude)
-        throws InputError, RequestError
-        {
-            // Get branch and trunk
-            var to_approve = yield get_transactions_to_approve(depth);
-            // attach to tangle - do pow
-            var attached = yield attach_to_tangle(to_approve.trunk_transaction,
-                                                  to_approve.branch_transaction,
-                                                  min_weight_magnitude,
-                                                  trytes);
-            if (sandbox)
-            {
-                error("sandbox not implemented");
-            }
-            // Broadcast and store tx
-            yield broadcast_and_store(attached);
-            var ret = new ArrayList<Transaction>();
-            foreach (string attached_trytes in attached)
-                ret.add(Utils.transaction_object(attached_trytes));
-            return ret;
-        }
-
-        /* Call API getTransactionsToApprove
-         */
-        public async ApiResults.GetTransactionsToApproveResponse
-        get_transactions_to_approve(int depth) throws RequestError
-        {
-            var json_command = ApiCommand.get_transactions_to_approve(depth);
-            string json_result = yield send_command(json_command);
-            ApiResults.GetTransactionsToApproveResponse ret = ApiResults.get_transactions_to_approve(json_result);
-            return ret;
-        }
-
-        /* Call API attachToTangle
-         */
-        public async Gee.List<string>
-        attach_to_tangle
-        (string trunk_transaction,
-         string branch_transaction,
-         int min_weight_magnitude,
-         Gee.List<string> trytes)
-        throws InputError, RequestError
-        {
-            if (! InputValidator.is_hash(trunk_transaction))
-                throw new InputError.INVALID_TRUNK_OR_BRANCH(trunk_transaction);
-            if (! InputValidator.is_hash(branch_transaction))
-                throw new InputError.INVALID_TRUNK_OR_BRANCH(branch_transaction);
-            if (! InputValidator.is_value(min_weight_magnitude))
-                throw new InputError.NOT_INT("");
-            if (! InputValidator.is_array_of_trytes(trytes))
-                throw new InputError.INVALID_TRYTES("");
-
-            var json_command = ApiCommand.attach_to_tangle(trunk_transaction,
-                                                           branch_transaction,
-                                                           min_weight_magnitude,
-                                                           trytes);
-            string json_result = yield send_command(json_command);
-            Gee.List<string> ret = ApiResults.attach_to_tangle(json_result);
-            return ret;
-        }
-
-        /* Call API broadcastTransactions
-         */
-        public async void
-        broadcast_transactions(Gee.List<string> trytes) throws RequestError
-        {
-            // TODO check inputValidator.isArrayOfAttachedTrytes(trytes)
-            var json_command = ApiCommand.broadcast_transactions(trytes);
-            string json_result = yield send_command(json_command);
-            ApiResults.broadcast_transactions(json_result);
-            // void
-        }
-
-        /* Call API storeTransactions
-         */
-        public async void
-        store_transactions(Gee.List<string> trytes) throws RequestError
-        {
-            // TODO check inputValidator.isArrayOfAttachedTrytes(trytes)
-            var json_command = ApiCommand.store_transactions(trytes);
-            string json_result = yield send_command(json_command);
-            ApiResults.store_transactions(json_result);
-            // void
-        }
-
-        /* Broadcasts and stores transaction trytes
-         */
-        public async void
-        broadcast_and_store(Gee.List<string> trytes) throws RequestError
-        {
-            yield broadcast_transactions(trytes);
-            yield store_transactions(trytes);
         }
     }
 }
