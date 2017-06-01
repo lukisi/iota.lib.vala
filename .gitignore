@@ -16,6 +16,7 @@ utils/input_validator.c
 testsuites/test_converter/test_converter.c
 extra/test_app/test_app.c
 extra/iota_seed_checker/iota_seed_checker.c
+extra/attach_spam_to_tangle/attach_spam_to_tangle.c
 Makefile.in
 aclocal.m4
 autom4te.cache/
