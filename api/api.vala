@@ -691,16 +691,34 @@ namespace IotaLibVala
                         normalized_bundle_fragments.add(normalized_bundle_hash.slice(l * 27, (l + 1) * 27));
                     }
 
-                    //  First 6561 trits for the firstFragment
+                    //  First 6561 trits for the first_fragment
                     var first_fragment = key.slice(0, 6561);
 
                     //  First bundle fragment uses the first 27 trytes
                     var first_bundle_fragment = normalized_bundle_fragments[0];
 
-                    //  Calculate the new signatureFragment with the first bundle fragment
+                    //  Calculate the new signature_fragment with the first bundle fragment
                     var first_signed_fragment = s.signature_fragment(first_bundle_fragment, first_fragment);
 
-                    // TODO complete
+                    //  Convert signature to trytes and assign the new signature_fragment
+                    bundle.bundle[i].signature_message_fragment = c.trytes(first_signed_fragment);
+
+                    // if user chooses higher than 27-tryte security
+                    // for each security level, add an additional signature
+                    for (var j = 1; j < key_security; j++) {
+                        //  Because the signature is > 2187 trytes, we need to
+                        //  find the subsequent transaction to add the remainder of the signature
+                        //  Same address as well as value = 0 (as we already spent the input)
+                        if (bundle.bundle[i + j].address == this_address && bundle.bundle[i + j].@value == 0) {
+                            // Use the next 6561 trits
+                            var next_fragment = key.slice(6561 * j,  (j + 1) * 6561);
+                            var next_bundle_fragment = normalized_bundle_fragments[j];
+                            //  Calculate the new signature
+                            var next_signed_fragment = s.signature_fragment(next_bundle_fragment, next_fragment);
+                            //  Convert signature to trytes and assign it again to this bundle entry
+                            bundle.bundle[i + j].signature_message_fragment = c.trytes(next_signed_fragment);
+                        }
+                    }
                 }
             }
 
