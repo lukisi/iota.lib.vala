@@ -9,6 +9,7 @@ EXTRA_PROGRAMS = \
 	test_app \
 	iota_seed_checker \
 	attach_spam_to_tangle \
+	send_tokens \
 	$(NULL)
 
 TESTS = \
@@ -174,6 +175,32 @@ attach_spam_to_tangle_CPPFLAGS = \
 	$(NULL)
 
 attach_spam_to_tangle_LDADD = \
+	$(GOBJECT_LIBS) \
+	$(GEE_LIBS) \
+	$(GIO_LIBS) \
+	$(builddir)/libiota-vala.la \
+	$(NULL)
+
+send_tokens_SOURCES = \
+	extra/send_tokens/send_tokens.vala \
+	iota-vala.vapi \
+	$(NULL)
+
+send_tokens_VALAFLAGS = \
+	--vapidir $(GEE_PREFIX)/share/vala/vapi \
+	--pkg gee-0.8 \
+	--vapidir $(GIO_PREFIX)/share/vala/vapi \
+	--pkg gio-2.0 \
+	$(NULL)
+
+send_tokens_CPPFLAGS = \
+	-w \
+	$(GOBJECT_CFLAGS) \
+	$(GEE_CFLAGS) \
+	$(GIO_CFLAGS) \
+	$(NULL)
+
+send_tokens_LDADD = \
 	$(GOBJECT_LIBS) \
 	$(GEE_LIBS) \
 	$(GIO_LIBS) \
