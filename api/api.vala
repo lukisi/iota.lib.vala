@@ -540,12 +540,13 @@ namespace IotaLibVala
                 // Pad for required 27 tryte length
                 while (tag.length < 27) tag += "9";
                 // Add first entries to the bundle
-                debug("prepare_transfers: add_entry to bundle");
+                debug("prepare_transfers: add_entry to bundle for transfer");
                 bundle.add_entry(signature_message_length,
                                  transfers[i].address,
                                  transfers[i].@value,
                                  tag,
                                  timestamp);
+                debug(@"prepare_transfers: add_entry done: bundle has $(bundle.bundle.size) transactions");
                 total_value += transfers[i].@value;
                 debug(@"prepare_transfers: total_value = $(total_value)");
             }
@@ -621,11 +622,13 @@ namespace IotaLibVala
                 var to_subtract = -this_balance;
                 int timestamp = (int)(time_t(null)); // timestamp in seconds
                 // Add input as bundle entry
+                debug("prepare_transfers: add_entry to bundle for input");
                 bundle.add_entry(chosen_inputs[i].security,
                                  chosen_inputs[i].address,
                                  to_subtract,
                                  tag,
                                  timestamp);
+                debug(@"prepare_transfers: add_entry done: bundle has $(bundle.bundle.size) transactions");
                 // If there is a remainder value
                 // Add extra output to send remaining funds to
                 if (this_balance >= total_transfer_value)
@@ -638,25 +641,30 @@ namespace IotaLibVala
                         if (remainder_address != null)
                         {
                             // Remainder bundle entry
+                            debug("prepare_transfers: add_entry to bundle for remainder");
                             bundle.add_entry(1,
                                              remainder_address,
                                              remainder,
                                              tag,
                                              timestamp);
+                            debug(@"prepare_transfers: add_entry done: bundle has $(bundle.bundle.size) transactions");
                         }
                         else
                         {
                             // Generate a new Address by calling getNewAddress
                             var options_gna = new OptionsGetNewAddress();
                             options_gna.security = security;
+                            debug("prepare_transfers: call get_new_address to have new remainder_address");
                             var address_a = yield get_new_address(seed, options_gna);
                             timestamp = (int)(time_t(null));
                             // Remainder bundle entry
+                            debug("prepare_transfers: add_entry to bundle for remainder");
                             bundle.add_entry(1,
                                              address_a[0],
                                              remainder,
                                              tag,
                                              timestamp);
+                            debug(@"prepare_transfers: add_entry done: bundle has $(bundle.bundle.size) transactions");
                         }
                     }
                     // If there is no remainder, do not add transaction to bundle
@@ -675,6 +683,7 @@ namespace IotaLibVala
             bundle.finalize_bundle();
             bundle.add_trytes(signature_fragments);
 
+            debug("prepare_transfers: begin signing inputs");
             //  SIGNING OF INPUTS
             //
             //  Here we do the actual signing of the inputs
