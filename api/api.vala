@@ -532,7 +532,7 @@ namespace IotaLibVala
                 total_value += transfers[i].@value;
             }
 
-            Gee.List<TransferInputValue> add_remainder_inputs;
+            Gee.List<TransferInputValue> chosen_inputs;
             // Get inputs if we are sending tokens
             if (total_value > 0)
             {
@@ -563,7 +563,7 @@ namespace IotaLibVala
                     }
                     if (total_value > total_balance)
                         throw new BalanceError.NOT_ENOUGH_BALANCE("Not enough balance");
-                    add_remainder_inputs = confirmed_inputs;
+                    chosen_inputs = confirmed_inputs;
                 }
                 //  Case 2: Get inputs deterministically
                 //
@@ -576,7 +576,7 @@ namespace IotaLibVala
                     options_gi.security = security;
                     // If inputs have not enough balance this will throw error
                     var inputs = yield get_inputs(seed, options_gi);
-                    add_remainder_inputs = inputs.inputs;
+                    chosen_inputs = inputs.inputs;
                 }
             }
             else
@@ -590,17 +590,17 @@ namespace IotaLibVala
                 return bundle_trytes;
             }
 
-            // addRemainder(add_remainder_inputs)
+            // See function addRemainder in JS
 
             var total_transfer_value = total_value;
-            for (int i = 0; i < add_remainder_inputs.size; i++)
+            for (int i = 0; i < chosen_inputs.size; i++)
             {
-                var this_balance = add_remainder_inputs[i].balance;
+                var this_balance = chosen_inputs[i].balance;
                 var to_subtract = -this_balance;
                 int timestamp = (int)(time_t(null)); // timestamp in seconds
                 // Add input as bundle entry
-                bundle.add_entry(add_remainder_inputs[i].security,
-                                 add_remainder_inputs[i].address,
+                bundle.add_entry(chosen_inputs[i].security,
+                                 chosen_inputs[i].address,
                                  to_subtract,
                                  tag,
                                  timestamp);
@@ -648,7 +648,7 @@ namespace IotaLibVala
                 }
             }
 
-            // signInputsAndReturn
+            // See function signInputsAndReturn in JS
 
             bundle.finalize_bundle();
             bundle.add_trytes(signature_fragments);
