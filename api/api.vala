@@ -246,9 +246,15 @@ namespace IotaLibVala
          SendTransferOptions options)
         throws InputError, RequestError, BalanceError
         {
+            debug("send_transfer: begin");
             // TODO validate input
+            debug("TODO: validate input");
+            debug("send_transfer: call prepare_transfers");
             var trytes = yield prepare_transfers(seed, transfers, options);
-            return yield send_trytes(trytes, depth, min_weight_magnitude);
+            debug("send_transfer: call send_trytes");
+            var ret = yield send_trytes(trytes, depth, min_weight_magnitude);
+            debug("send_transfer: begin");
+            return ret;
         }
 
         /**
@@ -393,8 +399,11 @@ namespace IotaLibVala
         get_inputs(string seed, OptionsGetInputs options)
         throws RequestError, BalanceError
         {
+            debug("get_inputs: begin");
+            debug("TODO validate seed");
             // TODO validate seed
 
+            debug("TODO start + end");
             // TODO validate start + end
             // If start value bigger than end, return error
             // or if difference between end and start is bigger than 500 keys
@@ -426,7 +435,9 @@ namespace IotaLibVala
                 options_gna.index = start;
                 options_gna.return_all = true;
                 options_gna.security = security;
+                debug("get_inputs: call get_new_address with return_all");
                 addresses = yield get_new_address(seed, options_gna);
+                debug(@"get_inputs: get_new_address returned $(addresses.size) addresses");
             }
 
             // getBalancesAndFormat addresses:
@@ -467,9 +478,13 @@ namespace IotaLibVala
          SendTransferOptions options)
         throws InputError, RequestError, BalanceError
         {
+            debug("prepare_transfers: begin");
+            debug("prepare_transfers: validate seed");
             if (! InputValidator.is_trytes(seed)) throw new InputError.INVALID_SEED("Invalid seed");
+            debug("prepare_transfers: validate options.inputs");
             if (! InputValidator.is_inputs(options.inputs)) throw new InputError.INVALID_INPUTS("Invalid inputs");
 
+            debug("TODO: validate transfers");
             // foreach (var this_transfer in transfers)
             {
                 // If message or tag is not supplied, provide it
@@ -486,6 +501,7 @@ namespace IotaLibVala
             string tag = "";
             Gee.List<string> signature_fragments = new ArrayList<string>();
 
+            debug("prepare_transfers: iterate transfers");
             //
             //  Iterate over all transfers, get totalValue
             //  and prepare the signatureFragments, message and tag
@@ -524,12 +540,14 @@ namespace IotaLibVala
                 // Pad for required 27 tryte length
                 while (tag.length < 27) tag += "9";
                 // Add first entries to the bundle
+                debug("prepare_transfers: add_entry to bundle");
                 bundle.add_entry(signature_message_length,
                                  transfers[i].address,
                                  transfers[i].@value,
                                  tag,
                                  timestamp);
                 total_value += transfers[i].@value;
+                debug(@"prepare_transfers: total_value = $(total_value)");
             }
 
             Gee.List<TransferInputValue> add_remainder_inputs;
@@ -575,18 +593,22 @@ namespace IotaLibVala
                     options_gi.threshold = total_value;
                     options_gi.security = security;
                     // If inputs have not enough balance this will throw error
+                    debug("prepare_transfers: call get_inputs");
                     var inputs = yield get_inputs(seed, options_gi);
+                    debug("prepare_transfers: call get_inputs done");
                     add_remainder_inputs = inputs.inputs;
                 }
             }
             else
             {
+                debug("prepare_transfers: no input required. finalize bundle");
                 // If no input required, don't sign and simply finalize the bundle
                 bundle.finalize_bundle();
                 bundle.add_trytes(signature_fragments);
                 var bundle_trytes = new ArrayList<string>();
                 foreach (var tx in bundle.bundle)
                     bundle_trytes.insert(0, Utils.transaction_trytes(tx));
+                debug(@"prepare_transfers: return list of $(bundle_trytes.size) transaction_trytes");
                 return bundle_trytes;
             }
 
