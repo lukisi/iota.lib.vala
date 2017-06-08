@@ -253,7 +253,7 @@ namespace IotaLibVala
             var trytes = yield prepare_transfers(seed, transfers, options);
             debug("send_transfer: call send_trytes");
             var ret = yield send_trytes(trytes, depth, min_weight_magnitude);
-            debug("send_transfer: begin");
+            debug("send_transfer: end");
             return ret;
         }
 
@@ -694,7 +694,7 @@ namespace IotaLibVala
             for (var i = 0; i < bundle.bundle.size; i++) {
 
                 if (bundle.bundle[i].@value < 0) {
-                    debug(@"prepare_transfers: transaction # $(i): has value");
+                    debug(@"prepare_transfers: transaction # $(i): moves value");
                     var this_address = bundle.bundle[i].address;
 
                     // Get the corresponding keyIndex and security of the address
