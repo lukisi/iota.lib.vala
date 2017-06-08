@@ -668,7 +668,7 @@ namespace IotaLibVala
                     // Get the corresponding keyIndex and security of the address
                     int key_index = -1;
                     int key_security = -1;
-                    foreach (TransferInputValue input in options.inputs) {
+                    foreach (TransferInputValue input in chosen_inputs) {
                         if (input.address == this_address) {
 
                             key_index = input.key_index;
@@ -676,6 +676,8 @@ namespace IotaLibVala
                             break;
                         }
                     }
+                    assert(key_index != -1);
+                    assert(key_security != -1);
 
                     var bundle_hash = bundle.bundle[i].bundle;
 
