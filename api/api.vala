@@ -694,6 +694,7 @@ namespace IotaLibVala
             for (var i = 0; i < bundle.bundle.size; i++) {
 
                 if (bundle.bundle[i].@value < 0) {
+                    debug(@"prepare_transfers: transaction # $(i): has value");
                     var this_address = bundle.bundle[i].address;
 
                     // Get the corresponding keyIndex and security of the address
@@ -709,14 +710,21 @@ namespace IotaLibVala
                     }
                     assert(key_index != -1);
                     assert(key_security != -1);
+                    debug(@"prepare_transfers: transaction # $(i): key_index = $(key_index)");
+                    debug(@"prepare_transfers: transaction # $(i): key_security = $(key_security)");
 
                     var bundle_hash = bundle.bundle[i].bundle;
+                    debug(@"prepare_transfers: transaction # $(i): bundle_hash = $(bundle_hash)");
 
                     // Get corresponding private key of address
                     var key = s.key(c.trits_from_trytes(seed), key_index, key_security);
+                    debug(@"prepare_transfers: transaction # $(i): key.size = $(key.size)");
+                    debug(@"prepare_transfers: transaction # $(i): key = $(c.trytes(key))");
 
                     //  Get the normalized bundle hash
                     var normalized_bundle_hash = bundle.normalized_bundle(bundle_hash);
+                    debug(@"prepare_transfers: transaction # $(i): normalized_bundle_hash.size = $(normalized_bundle_hash.size)");
+                    debug(@"prepare_transfers: transaction # $(i): normalized_bundle_hash = $(debug_list_int(normalized_bundle_hash))");
                     var normalized_bundle_fragments = new ArrayList<Gee.List<int64?>>();
 
                     // Split hash into 3 fragments
@@ -732,6 +740,9 @@ namespace IotaLibVala
 
                     //  Calculate the new signature_fragment with the first bundle fragment
                     var first_signed_fragment = s.signature_fragment(first_bundle_fragment, first_fragment);
+                    debug(@"prepare_transfers: transaction # $(i): security step 0");
+                    debug(@"prepare_transfers: transaction # $(i): first_signed_fragment.size = $(first_signed_fragment.size)");
+                    debug(@"prepare_transfers: transaction # $(i): first_signed_fragment = $(c.trytes(first_signed_fragment))");
 
                     //  Convert signature to trytes and assign the new signature_fragment
                     bundle.bundle[i].signature_message_fragment = c.trytes(first_signed_fragment);
@@ -739,6 +750,7 @@ namespace IotaLibVala
                     // if user chooses higher than 27-tryte security
                     // for each security level, add an additional signature
                     for (var j = 1; j < key_security; j++) {
+                        debug(@"prepare_transfers: transaction # $(i): security step $(j)");
                         //  Because the signature is > 2187 trytes, we need to
                         //  find the subsequent transaction to add the remainder of the signature
                         //  Same address as well as value = 0 (as we already spent the input)
@@ -748,6 +760,8 @@ namespace IotaLibVala
                             var next_bundle_fragment = normalized_bundle_fragments[j];
                             //  Calculate the new signature
                             var next_signed_fragment = s.signature_fragment(next_bundle_fragment, next_fragment);
+                            debug(@"prepare_transfers: transaction # $(i): next_signed_fragment.size = $(next_signed_fragment.size)");
+                            debug(@"prepare_transfers: transaction # $(i): next_signed_fragment = $(c.trytes(next_signed_fragment))");
                             //  Convert signature to trytes and assign it again to this bundle entry
                             bundle.bundle[i + j].signature_message_fragment = c.trytes(next_signed_fragment);
                         }
@@ -761,4 +775,16 @@ namespace IotaLibVala
             return bundle_trytes;
         }
     }
+}
+
+string debug_list_int(Gee.List<int64?> trits)
+{
+    string ret = ""; string next = "";
+    foreach (int64? trit in trits) {
+        string s_trit = "null";
+        if (trit != null) s_trit = @"$(trit)";
+        ret += @"$(next)$(s_trit)";
+        next = ",";
+    }
+    return @"[$(ret)]";
 }
