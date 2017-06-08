@@ -3,22 +3,50 @@ using IotaLibVala;
 
 void main(string[] args)
 {
-    assert(args.length == 2);
-    if (args[1] == "1") test_1();
-    if (args[1] == "2") test_2();
-    if (args[1] == "3") test_3();
+    if (args.length == 2)
+    {
+        if (args[1] == "1") test_1();
+        else if (args[1] == "2") test_2();
+        else if (args[1] == "3") test_3();
+        else usage(args[0]);
+    }
+    else usage(args[0]);
+    
 }
 
-const string FICTIONALSEED = "THROWAWAYSEED";
+void usage(string appname)
+{
+    print(@"Usage: $(appname) <num>\n");
+    print(@"   num=1: compute 10 addresses\n");
+    print(@"   num=2: get_node_info\n");
+    print(@"   num=3: find next unused address\n");
+    print("""
+
+In file config.ini, under section [TEST_APP], you can specify:
+    SEED
+    HOST
+    PORT
+
+""");
+}
+
+string seed;
+string host;
+int port;
 
 void test_1()
 {
+    seed = "THROWAWAYSEED";
+    host = "http://service.iotasupport.com";
+    port = 14265;
+    load_configuration();
+
     MainLoop loop = new MainLoop();
-    var iota = new Iota();
+    var iota = new Iota(host, port);
 
     Api.OptionsGetNewAddress options = new Api.OptionsGetNewAddress();
     options.total = 10;
-    iota.api.get_new_address.begin(FICTIONALSEED, options, (obj, res) => {
+    iota.api.get_new_address.begin(seed, options, (obj, res) => {
         try {
             var result = ((Api)obj).get_new_address.end(res);
             foreach (var a in result) print(@" * $(a)\n");
@@ -35,12 +63,17 @@ void test_1()
 
 void test_3()
 {
+    seed = "THROWAWAYSEED";
+    host = "http://service.iotasupport.com";
+    port = 14265;
+    load_configuration();
+
     MainLoop loop = new MainLoop();
-    var iota = new Iota("http://service.iotasupport.com");
+    var iota = new Iota(host, port);
 
     Api.OptionsGetNewAddress options = new Api.OptionsGetNewAddress();
     options.checksum = true;
-    iota.api.get_new_address.begin(FICTIONALSEED, options, (obj, res) => {
+    iota.api.get_new_address.begin(seed, options, (obj, res) => {
         try {
             var result = ((Api)obj).get_new_address.end(res);
             assert(result.size == 1);
@@ -58,8 +91,13 @@ void test_3()
 
 void test_2()
 {
+    seed = "THROWAWAYSEED";
+    host = "http://service.iotasupport.com";
+    port = 14265;
+    load_configuration();
+
     MainLoop loop = new MainLoop();
-    var iota = new Iota("http://service.iotasupport.com");
+    var iota = new Iota(host, port);
 
     iota.api.get_node_info.begin((obj, res) => {
         try {
@@ -74,4 +112,27 @@ void test_2()
     print("looping.\n");
     loop.run();
     print("Exiting.\n");
+}
+
+void load_configuration()
+{
+    string fname = "config.ini";
+    KeyFile conf = new KeyFile();
+    try
+    {
+        conf.load_from_file(fname, KeyFileFlags.NONE);
+        if (conf.has_group("TEST_APP"))
+        {
+            if (conf.has_key("TEST_APP", "SEED")) seed = conf.get_string("TEST_APP", "SEED");
+            else warning("using default SEED");
+            if (conf.has_key("TEST_APP", "HOST")) host = conf.get_string("TEST_APP", "HOST");
+            else warning("using default HOST");
+            if (conf.has_key("TEST_APP", "PORT")) port = conf.get_integer("TEST_APP", "PORT");
+            else warning("using default PORT");
+        }
+        else warning("no section TEST_APP in config.ini");
+    }
+    catch (KeyFileError.NOT_FOUND e) {warning("no config.ini");}
+    catch (FileError.NOENT e) {warning("no config.ini");}
+    catch (Error e) {error(e.message);}
 }
