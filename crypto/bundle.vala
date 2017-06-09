@@ -22,6 +22,11 @@ namespace IotaLibVala
                               string tag,
                               int timestamp)
         {
+            debug(@"Bundle.add_entry: signature_message_length = $(signature_message_length)");
+            debug(@"Bundle.add_entry: address = $(address)");
+            debug(@"Bundle.add_entry: value = $(@value)");
+            debug(@"Bundle.add_entry: tag = $(tag)");
+            debug(@"Bundle.add_entry: timestamp = $(timestamp)");
             for (var i = 0; i < signature_message_length; i++) {
 
                 var transaction_object = new Transaction();
@@ -36,6 +41,10 @@ namespace IotaLibVala
 
         public void add_trytes(Gee.List<string> signature_fragments)
         {
+            debug(@"Bundle.add_trytes: [");
+            foreach (string s in signature_fragments)
+                debug(@"Bundle.add_trytes:  \"$(s)\",");
+            debug(@"Bundle.add_trytes: ]");
             string empty_signature_fragment = "";
             string empty_hash = "999999999999999999999999999999999999999999999999999999999999999999999999999999999";
 
@@ -63,6 +72,7 @@ namespace IotaLibVala
 
         public void finalize_bundle()
         {
+            debug(@"Bundle.finalize_bundle()");
             Converter c = Converter.singleton;
             var curl = new Curl();
             curl.init();
@@ -72,33 +82,46 @@ namespace IotaLibVala
                 while (value_trits.size < 81) {
                     value_trits.add(0);
                 }
+                debug(@"Bundle.finalize_bundle: value_trits = $(debug_list_int(value_trits))");
 
                 var timestamp_trits = c.trits_from_long(_bundle[i].timestamp);
                 while (timestamp_trits.size < 27) {
                     timestamp_trits.add(0);
                 }
+                debug(@"Bundle.finalize_bundle: timestamp_trits = $(debug_list_int(timestamp_trits))");
 
                 var current_index_trits = c.trits_from_long(_bundle[i].current_index = i);
                 while (current_index_trits.size < 27) {
                     current_index_trits.add(0);
                 }
+                debug(@"Bundle.finalize_bundle: current_index_trits = $(debug_list_int(current_index_trits))");
 
                 var last_index_trits = c.trits_from_long(_bundle[i].last_index = _bundle.size - 1);
                 while (last_index_trits.size < 27) {
                     last_index_trits.add(0);
                 }
+                debug(@"Bundle.finalize_bundle: last_index_trits = $(debug_list_int(last_index_trits))");
 
-                curl.absorb(
-                     c.trits_from_trytes(_bundle[i].address
+                debug(@"$(_bundle[i].address)");
+                debug(@"$(c.trytes(value_trits))");
+                debug(@"$(_bundle[i].tag)");
+                debug(@"$(c.trytes(timestamp_trits))");
+                debug(@"$(c.trytes(current_index_trits))");
+                debug(@"$(c.trytes(last_index_trits))");
+                string _trytes = _bundle[i].address
                                          + c.trytes(value_trits)
                                          + _bundle[i].tag
                                          + c.trytes(timestamp_trits)
                                          + c.trytes(current_index_trits)
-                                         + c.trytes(last_index_trits)));
+                                         + c.trytes(last_index_trits);
+                debug(@"Bundle.finalize_bundle: _trytes = $(_trytes)");
+                curl.absorb(
+                     c.trits_from_trytes(_trytes));
 
             }
 
             var hash = c.trytes(curl.squeeze());
+            debug(@"Bundle.finalize_bundle: hash = $(hash)");
 
             for (var i = 0; i < _bundle.size; i++) {
 
