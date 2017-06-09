@@ -252,6 +252,7 @@ namespace IotaLibVala
             debug("send_transfer: call prepare_transfers");
             var trytes = yield prepare_transfers(seed, transfers, options);
             debug("send_transfer: call send_trytes");
+            error("block here!");
             var ret = yield send_trytes(trytes, depth, min_weight_magnitude);
             debug("send_transfer: end");
             return ret;
@@ -534,7 +535,7 @@ namespace IotaLibVala
                     while (fragment.length < 2187) fragment += "9";
                     signature_fragments.add(fragment);
                 }
-                int timestamp = (int)(time_t(null)); // timestamp in seconds
+                int timestamp = 0; // (int)(time_t(null)); // timestamp in seconds
                 tag = transfers[i].tag;
                 if (tag == "") tag = "999999999999999999999999999";
                 // Pad for required 27 tryte length
@@ -620,7 +621,7 @@ namespace IotaLibVala
             {
                 var this_balance = chosen_inputs[i].balance;
                 var to_subtract = -this_balance;
-                int timestamp = (int)(time_t(null)); // timestamp in seconds
+                int timestamp = 0; // (int)(time_t(null)); // timestamp in seconds
                 // Add input as bundle entry
                 debug("prepare_transfers: add_entry to bundle for input");
                 bundle.add_entry(chosen_inputs[i].security,
@@ -656,7 +657,7 @@ namespace IotaLibVala
                             options_gna.security = security;
                             debug("prepare_transfers: call get_new_address to have new remainder_address");
                             var address_a = yield get_new_address(seed, options_gna);
-                            timestamp = (int)(time_t(null));
+                            timestamp = 0; // (int)(time_t(null));
                             // Remainder bundle entry
                             debug("prepare_transfers: add_entry to bundle for remainder");
                             bundle.add_entry(1,
