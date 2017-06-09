@@ -73,10 +73,13 @@ void load_configuration()
         if (conf.has_group("IOTA_SEED_CHECKER"))
         {
             if (conf.has_key("IOTA_SEED_CHECKER", "SEED")) seed = conf.get_string("IOTA_SEED_CHECKER", "SEED");
+            else warning("using default SEED");
             if (conf.has_key("IOTA_SEED_CHECKER", "TOTAL")) total = conf.get_integer("IOTA_SEED_CHECKER", "TOTAL");
+            else warning("using default TOTAL");
         }
+        else warning("no section IOTA_SEED_CHECKER in config.ini");
     }
-    catch (KeyFileError.NOT_FOUND e) {}
-    catch (FileError.NOENT e) {}
+    catch (KeyFileError.NOT_FOUND e) {warning("no config.ini");}
+    catch (FileError.NOENT e) {warning("no config.ini");}
     catch (Error e) {error(e.message);}
 }
