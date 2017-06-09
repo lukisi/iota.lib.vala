@@ -84,10 +84,15 @@ void load_configuration()
             if (conf.has_key("SEND_TOKENS", "ADDRESS")) address = conf.get_string("SEND_TOKENS", "ADDRESS");
             else warning("using default ADDRESS");
             if (conf.has_key("SEND_TOKENS", "HOST")) host = conf.get_string("SEND_TOKENS", "HOST");
+            else warning("using default HOST");
             if (conf.has_key("SEND_TOKENS", "PORT")) port = conf.get_integer("SEND_TOKENS", "PORT");
+            else warning("using default PORT");
             if (conf.has_key("SEND_TOKENS", "VALUE")) val = conf.get_int64("SEND_TOKENS", "VALUE");
+            else warning("using default VALUE");
             if (conf.has_key("SEND_TOKENS", "TAG")) tag = conf.get_string("SEND_TOKENS", "TAG");
+            else warning("using default TAG");
             if (conf.has_key("SEND_TOKENS", "MESSAGE")) message = conf.get_string("SEND_TOKENS", "MESSAGE");
+            else warning("using default MESSAGE");
         }
         else warning("no section SEND_TOKENS in config.ini");
     }
