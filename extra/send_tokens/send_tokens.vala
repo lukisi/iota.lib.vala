@@ -63,7 +63,19 @@ async void dostuff()
     }
     print(@"Success! Returned $(transactions.size) transactions:\n");
     foreach (Transaction transaction in transactions) {
+        print("\n");
         print(@"hash: $(transaction.hash)\n");
+        print(@"signature_message_fragment: $(transaction.signature_message_fragment)\n");
+        print(@"address: $(transaction.address)\n");
+        print(@"value: $(transaction.@value)\n");
+        print(@"tag: $(transaction.tag)\n");
+        print(@"timestamp: $(transaction.timestamp)\n");
+        print(@"current_index: $(transaction.current_index)\n");
+        print(@"last_index: $(transaction.last_index)\n");
+        print(@"bundle: $(transaction.bundle)\n");
+        print(@"trunk_transaction: $(transaction.trunk_transaction)\n");
+        print(@"branch_transaction: $(transaction.branch_transaction)\n");
+        print(@"nonce: $(transaction.nonce)\n");
     }
 }
 

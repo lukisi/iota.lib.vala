@@ -188,8 +188,14 @@ namespace IotaLibVala
         throws InputError, RequestError
         {
             // Get branch and trunk
+            debug(@"sendTrytes: call getTransactionsToApprove(depth)");
+            debug(@"sendTrytes:      depth = $(depth)");
             var to_approve = yield get_transactions_to_approve(depth);
             // attach to tangle - do pow
+            debug(@"sendTrytes: call attachToTangle(trunk,branch,mwm,trytes)");
+            debug(@"sendTrytes:      trunk = $(to_approve.trunk_transaction)");
+            debug(@"sendTrytes:      branch = $(to_approve.branch_transaction)");
+            debug(@"sendTrytes:      mwm = $(min_weight_magnitude)");
             var attached = yield attach_to_tangle(to_approve.trunk_transaction,
                                                   to_approve.branch_transaction,
                                                   min_weight_magnitude,
@@ -199,7 +205,13 @@ namespace IotaLibVala
                 error("sandbox not implemented");
             }
             // Broadcast and store tx
-            yield broadcast_and_store(attached);
+            debug("sendTrytes: call broadcastAndStore(attached)");
+            debug("sendTrytes:      attached =");
+            foreach (string s in attached) debug(@"  '$(s)'");
+
+            debug("fake this call!");
+            // fake this call    yield broadcast_and_store(attached);
+
             var ret = new ArrayList<Transaction>();
             foreach (string attached_trytes in attached)
                 ret.add(Utils.transaction_object(attached_trytes));
@@ -259,7 +271,10 @@ namespace IotaLibVala
             debug("send_transfer: call prepare_transfers");
             var trytes = yield prepare_transfers(seed, transfers, options);
             debug("send_transfer: call send_trytes");
-            error("block here!");
+            debug(@"send_transfer:      depth = $(depth)");
+            debug(@"send_transfer:      min_weight_magnitude = $(min_weight_magnitude)");
+            debug(@"send_transfer:      trytes =");
+            foreach (string s in trytes) debug(@"  '$(s)'");
             var ret = yield send_trytes(trytes, depth, min_weight_magnitude);
             debug("send_transfer: end");
             return ret;
