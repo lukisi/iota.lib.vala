@@ -29,8 +29,9 @@ namespace IotaLibVala
             yield;
             if (msg.status_code != (uint)Soup.Status.OK)
             {
-                debug(@"Request: report status = $(msg.status_code)");
-                throw new RequestError.REQUEST_ERROR(@"status = $(msg.status_code)");
+                string why = Soup.Status.get_phrase(msg.status_code);
+                debug(@"Request: report status = $(why)");
+                throw new RequestError.REQUEST_ERROR(@"status = $(why)");
             }
             string ret = (string)msg.response_body.data;
             debug(@"Request: report response = '$(ret)'");
