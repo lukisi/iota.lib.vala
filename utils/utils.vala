@@ -17,6 +17,27 @@ namespace IotaLibVala.Utils
         return address + checksum;
     }
 
+    /* Removes the 9-tryte checksum of an address
+     */
+    public string no_checksum(string address)
+    throws InputError
+    {
+        if (address.length < 81) throw new InputError.INVALID_INPUTS("address.length < 81");
+        return address.slice(0, 81);
+    }
+
+    /* Validates the checksum of an address
+     */
+    public bool is_valid_checksum(string address_with_checksum)
+    throws InputError
+    {
+        var address_without_checksum = no_checksum(address_with_checksum);
+
+        var new_checksum = add_checksum(address_without_checksum);
+
+        return new_checksum == address_with_checksum;
+    }
+
     /* Converts transaction trytes of 2673 trytes into a transaction object
      */
     public Transaction transaction_object(string trytes)

@@ -42,11 +42,9 @@ async void dostuff()
 
     var iota = new Iota(host, port);
 
-    Api.TransferToSend transfer = new Api.TransferToSend();
+    Api.TransferToSend transfer = new Api.TransferToSend(address, val);
     transfer.tag = tag;
     transfer.message = message;
-    transfer.address = address;
-    transfer.@value = val;
     Api.SendTransferOptions options = new Api.SendTransferOptions();
     Gee.List<Transaction> transactions;
     try {

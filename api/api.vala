@@ -210,6 +210,13 @@ namespace IotaLibVala
          */
         public class TransferToSend : Object
         {
+            public TransferToSend(string address, int64 val)
+            {
+                tag = "";
+                message = "";
+                this.address = address;
+                @value = val;
+            }
             public string tag;
             public string message;
             public string address;
@@ -485,12 +492,15 @@ namespace IotaLibVala
             debug("prepare_transfers: validate options.inputs");
             if (! InputValidator.is_inputs(options.inputs)) throw new InputError.INVALID_INPUTS("Invalid inputs");
 
-            debug("TODO: validate transfers");
-            // foreach (var this_transfer in transfers)
+            debug("prepare_transfers: validate transfers");
+            foreach (var this_transfer in transfers)
             {
-                // If message or tag is not supplied, provide it
-                // Also remove the checksum of the address if it's there after validating it
-                // TODO validate transfers
+                // Remove the checksum of the address if it's there after validating it
+                if (this_transfer.address.length == 90) {
+                    if (!Utils.is_valid_checksum(this_transfer.address))
+                        throw new InputError.INVALID_CHECKSUM(@"INVALID_CHECKSUM: $(this_transfer.address)");
+                }
+                this_transfer.address = Utils.no_checksum(this_transfer.address);
             }
 
             string? remainder_address = options.address;
