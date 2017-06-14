@@ -183,10 +183,10 @@ namespace IotaLibVala
         /* Broadcasts and stores transaction trytes
          */
         public async void
-        broadcast_and_store(Gee.List<string> trytes) throws RequestError
+        store_and_broadcast(Gee.List<string> trytes) throws RequestError
         {
-            yield broadcast_transactions(trytes);
             yield store_transactions(trytes);
+            yield broadcast_transactions(trytes);
         }
 
         /* Gets transactions to approve, attaches to Tangle, broadcasts and stores
@@ -208,7 +208,7 @@ namespace IotaLibVala
                 error("sandbox not implemented");
             }
             // Broadcast and store tx
-            yield broadcast_and_store(attached);
+            yield store_and_broadcast(attached);
             var ret = new ArrayList<Transaction>();
             foreach (string attached_trytes in attached)
                 ret.add(Utils.transaction_object(attached_trytes));
