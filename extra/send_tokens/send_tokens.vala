@@ -23,7 +23,7 @@ string tag;
 string message;
 
 const int depth = 4;
-const int min_weight_magnitude = 13;
+const int min_weight_magnitude = 15;
 
 async void dostuff()
 {
