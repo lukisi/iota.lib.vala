@@ -49,7 +49,7 @@ namespace IotaLibVala
 
         /* Call API attachToTangle
          */
-        public async Gee.List<string>
+        public virtual async Gee.List<string>
         attach_to_tangle
         (string trunk_transaction,
          string branch_transaction,
@@ -73,6 +73,15 @@ namespace IotaLibVala
             string json_result = yield send_command(json_command);
             Gee.List<string> ret = ApiResults.attach_to_tangle(json_result);
             return ret;
+        }
+
+        /* Call API interruptAttachingToTangle
+         */
+        public virtual async void /*WHAT*/
+        interrupt_attaching_to_tangle()
+        throws InputError, RequestError
+        {
+            error("not implemented yet");
         }
 
         /* Call API findTransactions for the particular case where the only search
@@ -174,10 +183,10 @@ namespace IotaLibVala
         /* Broadcasts and stores transaction trytes
          */
         public async void
-        broadcast_and_store(Gee.List<string> trytes) throws RequestError
+        store_and_broadcast(Gee.List<string> trytes) throws RequestError
         {
-            yield broadcast_transactions(trytes);
             yield store_transactions(trytes);
+            yield broadcast_transactions(trytes);
         }
 
         /* Gets transactions to approve, attaches to Tangle, broadcasts and stores
@@ -204,13 +213,13 @@ namespace IotaLibVala
             {
                 error("sandbox not implemented");
             }
-            // Broadcast and store tx
-            debug("sendTrytes: call broadcastAndStore(attached)");
+            // Store and broadcast tx
+            debug("sendTrytes: call store_and_broadcast(attached)");
             debug("sendTrytes:      attached =");
             foreach (string s in attached) debug(@"  '$(s)'");
 
             debug("fake this call!");
-            // fake this call    yield broadcast_and_store(attached);
+            // fake this call    yield store_and_broadcast(attached);
 
             var ret = new ArrayList<Transaction>();
             foreach (string attached_trytes in attached)
@@ -799,6 +808,36 @@ namespace IotaLibVala
             foreach (var tx in bundle.bundle)
                 bundle_trytes.insert(0, Utils.transaction_trytes(tx));
             return bundle_trytes;
+        }
+    }
+
+    public class ApiClientsidePow : Api
+    {
+        public ApiClientsidePow(MakeRequest make_request, bool sandbox)
+        {
+            base(make_request, sandbox);
+        }
+
+        /* Call client-side attachToTangle
+         */
+        public override async Gee.List<string>
+        attach_to_tangle
+        (string trunk_transaction,
+         string branch_transaction,
+         int min_weight_magnitude,
+         Gee.List<string> trytes)
+        throws InputError, RequestError
+        {
+            error("not implemented yet");
+        }
+
+        /* Call client-side interruptAttachingToTangle
+         */
+        public override async void /*WHAT*/
+        interrupt_attaching_to_tangle()
+        throws InputError, RequestError
+        {
+            error("not implemented yet");
         }
     }
 }
