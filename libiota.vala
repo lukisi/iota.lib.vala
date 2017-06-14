@@ -23,5 +23,11 @@ namespace IotaLibVala
             sandbox = false;
             api = new Api(make_request, sandbox);
         }
+
+        public Iota.client_side_pow(string host="http://localhost", int port=14265)
+        {
+            this(host, port);
+            api = new ApiClientsidePow(make_request, sandbox);
+        }
     }
 }
