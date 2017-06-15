@@ -219,6 +219,10 @@ namespace IotaLibVala
             debug("sendTrytes: call store_and_broadcast(attached)");
             debug("sendTrytes:      attached =");
             foreach (string s in attached) debug(@"  '$(s)'");
+            debug("sendTrytes:      attached as Transaction objects =");
+            foreach (string s in attached) {
+                print_transaction(Utils.transaction_object(s));
+            }
 
             yield store_and_broadcast(attached);
 
@@ -924,16 +928,32 @@ namespace IotaLibVala
             error("not implemented yet");
         }
     }
-}
 
-string debug_list_int(Gee.List<int64?> trits)
-{
-    string ret = ""; string next = "";
-    foreach (int64? trit in trits) {
-        string s_trit = "null";
-        if (trit != null) s_trit = @"$(trit)";
-        ret += @"$(next)$(s_trit)";
-        next = ",";
+    string debug_list_int(Gee.List<int64?> trits)
+    {
+        string ret = ""; string next = "";
+        foreach (int64? trit in trits) {
+            string s_trit = "null";
+            if (trit != null) s_trit = @"$(trit)";
+            ret += @"$(next)$(s_trit)";
+            next = ",";
+        }
+        return @"[$(ret)]";
     }
-    return @"[$(ret)]";
+
+    void print_transaction(Transaction transaction)
+    {
+            print(@"{ hash: '$(transaction.hash)',\n");
+            print(@"  signatureMessageFragment: '$(transaction.signature_message_fragment)',\n");
+            print(@"  address: '$(transaction.address)',\n");
+            print(@"  value: $(transaction.@value),\n");
+            print(@"  tag: '$(transaction.tag)',\n");
+            print(@"  timestamp: $(transaction.timestamp),\n");
+            print(@"  currentIndex: $(transaction.current_index),\n");
+            print(@"  lastIndex: $(transaction.last_index),\n");
+            print(@"  bundle: '$(transaction.bundle)',\n");
+            print(@"  trunkTransaction: '$(transaction.trunk_transaction)',\n");
+            print(@"  branchTransaction: '$(transaction.branch_transaction)',\n");
+            print(@"  nonce: '$(transaction.nonce)' }\n");
+    }
 }
