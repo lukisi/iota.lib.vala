@@ -767,7 +767,90 @@ namespace IotaLibVala
          Gee.List<string> trytes)
         throws InputError, RequestError
         {
-            error("not implemented yet");
+            Pow libccurl = Pow.singleton;
+
+            if (! InputValidator.is_hash(trunk_transaction))
+                throw new InputError.INVALID_TRUNK_OR_BRANCH(trunk_transaction);
+            if (! InputValidator.is_hash(branch_transaction))
+                throw new InputError.INVALID_TRUNK_OR_BRANCH(branch_transaction);
+            if (! InputValidator.is_value(min_weight_magnitude))
+                throw new InputError.NOT_INT("");
+            if (! InputValidator.is_array_of_trytes(trytes))
+                throw new InputError.INVALID_TRYTES("");
+
+            Gee.List<string> final_bundle_trytes = new ArrayList<string>();
+            string? prev_tx_hash = null;
+            int i = 0;
+            while (i < trytes.size)
+            {
+                // See function getBundleTrytes in JS
+                var this_trytes = trytes[i];
+
+                // PROCESS LOGIC:
+                // Start with last index transaction
+                // Assign it the trunk / branch which the user has supplied
+                // IF there is a bundle, chain  the bundle transactions via
+                // trunkTransaction together
+
+                // If this is the first transaction, to be processed
+                // Make sure that it's the last in the bundle and then
+                // assign it the supplied trunk and branch transactions
+                if (prev_tx_hash == null)
+                {
+                    var tx_object = Utils.transaction_object(this_trytes);
+
+                    // Check if last transaction in the bundle
+                    if (tx_object.last_index != tx_object.current_index) {
+                        throw new InputError.INVALID_INPUTS
+                            ("Wrong bundle order. The bundle should be ordered " +
+                             "in descending order from currentIndex");
+                    }
+
+                    tx_object.trunk_transaction = trunk_transaction;
+                    tx_object.branch_transaction = branch_transaction;
+
+                    var new_trytes = Utils.transaction_trytes(tx_object);
+
+                    var returned_trytes =
+                        yield libccurl.ccurl_pow(new_trytes, min_weight_magnitude);
+
+                    if (returned_trytes == null)
+                        throw new RequestError.REQUEST_ERROR("POW INTERRUPTED");
+
+                    // Save prev_tx_hash
+                    var new_tx_object = Utils.transaction_object(returned_trytes);
+                    prev_tx_hash = new_tx_object.hash;
+
+                    final_bundle_trytes.insert(0, returned_trytes);
+                }
+
+                else
+                {
+                    var tx_object = Utils.transaction_object(this_trytes);
+
+                    // Chain the bundle together via the trunkTransaction (previous tx in the bundle)
+                    // Assign the supplied trunkTransaciton as branchTransaction
+                    tx_object.trunk_transaction = prev_tx_hash;
+                    tx_object.branch_transaction = trunk_transaction;
+
+                    var new_trytes = Utils.transaction_trytes(tx_object);
+
+                    var returned_trytes =
+                        yield libccurl.ccurl_pow(new_trytes, min_weight_magnitude);
+
+                    if (returned_trytes == null)
+                        throw new RequestError.REQUEST_ERROR("POW INTERRUPTED");
+
+                    // Save prev_tx_hash
+                    var new_tx_object = Utils.transaction_object(returned_trytes);
+                    prev_tx_hash = new_tx_object.hash;
+
+                    final_bundle_trytes.insert(0, returned_trytes);
+                }
+
+                i++;
+            }
+            return final_bundle_trytes;
         }
 
         /* Call client-side interruptAttachingToTangle
