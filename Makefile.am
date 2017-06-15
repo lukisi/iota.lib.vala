@@ -35,6 +35,7 @@ libiota_vala_la_SOURCES = \
 	errors/request_errors.vala \
 	crypto/bundle.vala \
 	crypto/signing.vala \
+	crypto/pow.vala \
 	$(NULL)
 
 libiota_vala_la_VALAFLAGS = \

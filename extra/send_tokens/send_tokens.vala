@@ -40,7 +40,7 @@ async void dostuff()
 
     load_configuration();
 
-    var iota = new Iota(host, port);
+    var iota = new Iota.client_side_pow(host, port);
 
     Api.TransferToSend transfer = new Api.TransferToSend(address, val);
     transfer.tag = tag;
