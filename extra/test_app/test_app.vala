@@ -53,6 +53,8 @@ void test_1()
             loop.quit();
         } catch (RequestError e) {
             assert_not_reached(); // not even an RPC API call.
+        } catch (InputError e) {
+            assert_not_reached(); // not even an RPC API call.
         }
     });
 
@@ -80,6 +82,8 @@ void test_3()
             print(@" = $(result[0])\n");
         } catch (RequestError e) {
             warning(@"RequestError. Code = $(e.code). Message: $(e.message)");
+        } catch (InputError e) {
+            warning(@"InputError. Code = $(e.code). Message: $(e.message)");
         }
         loop.quit();
     });

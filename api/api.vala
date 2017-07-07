@@ -327,9 +327,13 @@ namespace IotaLibVala
          */
         public async Gee.List<string>
         get_new_address(string seed, OptionsGetNewAddress options)
-        throws RequestError
+        throws RequestError, InputError
         {
             int index = options.index;
+            if (index < 0)
+                throw new InputError.INVALID_INDEX("Invalid Index option provided");
+            if (options.security < 1 || options.security > 3)
+                throw new InputError.INVALID_SECURITY("Invalid Security option provided");
             // TODO validate the seed
 
             ArrayList<string> ret = new ArrayList<string>();
@@ -407,7 +411,7 @@ namespace IotaLibVala
          */
         public async GetInputsResponse
         get_inputs(string seed, OptionsGetInputs options)
-        throws RequestError, BalanceError
+        throws RequestError, BalanceError, InputError
         {
             // TODO validate seed
 

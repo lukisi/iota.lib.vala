@@ -40,6 +40,8 @@ async void dostuff()
         addresses = yield iota.api.get_new_address(seed, options);
     } catch (RequestError e) {
         assert_not_reached(); // not even an RPC API call.
+    } catch (InputError e) {
+        assert_not_reached(); // not even an RPC API call.
     }
     foreach (var a in addresses) print(@" * $(a)\n");
     Gee.List<int64?> inputs;

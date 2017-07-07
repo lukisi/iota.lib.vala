@@ -4,6 +4,8 @@ namespace IotaLibVala
     {
         INVALID_TRYTES,
         INVALID_SEED,
+        INVALID_INDEX,
+        INVALID_SECURITY,
         INVALID_CHECKSUM,
         INVALID_ATTACHED_TRYTES,
         INVALID_TRANSFERS,
