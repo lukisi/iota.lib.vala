@@ -36,6 +36,7 @@ libiota_vala_la_SOURCES = \
 	crypto/bundle.vala \
 	crypto/signing.vala \
 	crypto/pow.vala \
+	crypto/hmac.vala \
 	$(NULL)
 
 libiota_vala_la_VALAFLAGS = \

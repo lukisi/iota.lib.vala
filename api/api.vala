@@ -27,6 +27,12 @@ namespace IotaLibVala
         public string nonce {get; set;}
     }
 
+    const string null_hash_trytes =
+        "9999999999999999999999999999999999999999999999999999999999999999999" +
+        "9999999999999999999999999999999999999999999999999999999999999999999" +
+        "9999999999999999999999999999999999999999999999999999999999999999999" +
+        "999999999999999999999999999999999999999999";  // 243 9s
+
     /* Making API requests, including generalized wrapper functions
      */
     public class Api : Object
@@ -244,11 +250,13 @@ namespace IotaLibVala
             public string? address;
             public Gee.List<TransferInputValue> inputs;
             public int security;
+            public string? hmac_key;
             public SendTransferOptions()
             {
                 address = null;
                 security = 2;
                 inputs = new ArrayList<TransferInputValue>();
+                hmac_key = null;
             }
         }
 
@@ -487,11 +495,22 @@ namespace IotaLibVala
          SendTransferOptions options)
         throws InputError, RequestError, BalanceError
         {
+            bool add_hmac = false;
+            bool added_hmac = false;
             if (! InputValidator.is_trytes(seed)) throw new InputError.INVALID_SEED("Invalid seed");
             if (! InputValidator.is_inputs(options.inputs)) throw new InputError.INVALID_INPUTS("Invalid inputs");
+            if (options.hmac_key != null)
+            {
+                if (! InputValidator.is_trytes(options.hmac_key)) throw new InputError.INVALID_TRYTES("Invalid hmac_key");
+                add_hmac = true;
+            }
 
             foreach (var this_transfer in transfers)
             {
+                if (add_hmac && this_transfer.@value > 0) {
+                    this_transfer.message = null_hash_trytes + this_transfer.message;
+                    added_hmac = true;
+                }
                 // Remove the checksum of the address if it's there after validating it
                 if (this_transfer.address.length == 90) {
                     if (!Utils.is_valid_checksum(this_transfer.address))
@@ -745,6 +764,10 @@ namespace IotaLibVala
                         }
                     }
                 }
+            }
+            if(added_hmac) {
+                var hmac = new HMAC(options.hmac_key);
+                hmac.add_hmac(bundle);
             }
 
             var bundle_trytes = new ArrayList<string>();
