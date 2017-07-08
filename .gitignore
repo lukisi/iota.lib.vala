@@ -6,7 +6,6 @@ crypto/signing.c
 crypto/bundle.c
 crypto/curl.c
 crypto/pow.c
-crypto/hmac.c
 api/api.c
 api/api_commands.c
 api/api_results.c
