@@ -19,5 +19,5 @@ See file [INSTALL](INSTALL) for more details.
 
 ## Usage
 
-**TODO**
+**TO-DO**
 
